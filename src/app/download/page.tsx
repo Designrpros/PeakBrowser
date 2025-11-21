@@ -4,9 +4,9 @@ import styled from "styled-components";
 import React, { useState, useEffect } from 'react';
 import { Download, AlertTriangle, Terminal, Monitor, Apple, Package } from 'lucide-react';
 
-// --- GITHUB ASSET CONSTANTS (UPDATED) ---
+// --- GITHUB ASSET CONSTANTS (UPDATED TO LATEST TAG v0.0.2) ---
 const REPO = 'Designrpros/peak-multiplatform';
-const TAG = 'v0.0.2'; // <-- UPDATED TO LATEST SUCCESSFUL TAG
+const TAG = 'v0.0.2'; 
 const BASE_URL = `https://github.com/${REPO}/releases/download/${TAG}/`;
 
 const mac_arm64 = BASE_URL + "Peak-mac-arm64.dmg"; 
@@ -15,7 +15,7 @@ const mac_x64 = BASE_URL + "Peak-mac-x64.dmg";
 const win_x64 = BASE_URL + "Peak-win-x64.exe";     
 const win_arm64 = BASE_URL + "Peak-win-arm64.exe"; 
 
-const linux_AppImage_x64 = BASE_URL + "Peak-linux-x86_64.AppImage"; 
+const linux_AppImage_x64 = BASE_URL + "Peak-linux-x86_64.AppImage";
 const linux_AppImage_arm64 = BASE_URL + "Peak-linux-arm64.AppImage";
 const linux_deb_x64 = BASE_URL + "Peak-linux-amd64.deb"; 
 const linux_deb_arm64 = BASE_URL + "Peak-linux-arm64.deb";
@@ -199,7 +199,7 @@ const MacInstructions = () => (
     </InstructionStep>
     <InstructionStep>
       <h3>2. Security Check</h3>
-      <p>If macOS prevents opening, go to <strong>System Settings &gt; Privacy & Security</strong> and click <strong>Open Anyway</strong>.</p>
+      <p>If macOS prevents opening, go to <strong>System Settings &gt; Privacy &amp; Security</strong> and click <strong>Open Anyway</strong>.</p>
     </InstructionStep>
   </>
 );
@@ -212,8 +212,9 @@ const WindowsInstructions = () => (
       <p>Double-click the <code>.exe</code> file to start.</p>
     </InstructionStep>
     <InstructionStep>
-      <h3>2. SmartScreen</h3>
-      <p>If Windows Defender appears, click <strong>More info</strong> then <strong>Run anyway</strong>.</p>
+      <h3>2. SmartScreen (Security Warning)</h3>
+      {/* FIX: Escaped double quotes using &quot; to prevent React compilation error */}
+      <p>If Windows Defender appears, click <strong>&quot;More info&quot;</strong> then <strong>&quot;Run anyway&quot;</strong>.</p>
     </InstructionStep>
   </>
 );
@@ -236,7 +237,7 @@ const LinuxInstructions = () => (
     </InstructionStep>
     <InstructionStep>
       <h3>For AppImage</h3>
-      <p>1. Right-click file &gt; Properties &gt; Permissions &gt; Check "Allow executing file as program".</p>
+      <p>1. Right-click file &gt; Properties &gt; Permissions &gt; Check &quot;Allow executing file as program&quot;.</p>
       <p>2. Or via terminal: <code>chmod +x Peak-linux-x86_64.AppImage</code></p>
     </InstructionStep>
   </>
@@ -248,18 +249,15 @@ export default function DownloadPage() {
   useEffect(() => {
     const ua = window.navigator.userAgent.toLowerCase();
     if (ua.includes('mac')) {
-        // Simple UA check for initial Mac logic
         setOs(ua.includes('arm') ? 'mac-arm' : 'mac-intel'); 
     } else if (ua.includes('win')) {
         setOs(ua.includes('arm') ? 'win-arm' : 'win-x64');
     } else if (ua.includes('linux')) {
-        // Simplification for Linux
         setOs(ua.includes('aarch64') || ua.includes('arm') ? 'linux-arm' : 'linux-x64');
     }
   }, []);
 
   const getPrimaryDownload = () => {
-    // Note: The logic below provides the most suitable installer based on OS detection.
     switch (os) {
         case 'mac-arm': return { url: mac_arm64, label: 'Download for Mac (Apple Silicon)', filename: 'Peak-mac-arm64.dmg' };
         case 'mac-intel': return { url: mac_x64, label: 'Download for Mac (Intel)', filename: 'Peak-mac-x64.dmg' };
