@@ -1,10 +1,28 @@
 'use client';
 
 import styled from "styled-components";
-// 1. IMPORT useState and useEffect
 import React, { useState, useEffect } from 'react';
-import { Download, AlertTriangle, ChevronsRight } from 'lucide-react';
+import { Download, AlertTriangle, Terminal, Monitor, Apple, Package } from 'lucide-react';
 
+// --- GITHUB ASSET CONSTANTS (UPDATED) ---
+const REPO = 'Designrpros/peak-multiplatform';
+const TAG = 'v0.0.2'; // <-- UPDATED TO LATEST SUCCESSFUL TAG
+const BASE_URL = `https://github.com/${REPO}/releases/download/${TAG}/`;
+
+const mac_arm64 = BASE_URL + "Peak-mac-arm64.dmg"; 
+const mac_x64 = BASE_URL + "Peak-mac-x64.dmg";     
+
+const win_x64 = BASE_URL + "Peak-win-x64.exe";     
+const win_arm64 = BASE_URL + "Peak-win-arm64.exe"; 
+
+const linux_AppImage_x64 = BASE_URL + "Peak-linux-x86_64.AppImage"; 
+const linux_AppImage_arm64 = BASE_URL + "Peak-linux-arm64.AppImage";
+const linux_deb_x64 = BASE_URL + "Peak-linux-amd64.deb"; 
+const linux_deb_arm64 = BASE_URL + "Peak-linux-arm64.deb";
+const linux_rpm_x64 = BASE_URL + "Peak-linux-x86_64.rpm"; 
+// -----------------------------------------
+
+// --- STYLED COMPONENTS ---
 const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -12,7 +30,7 @@ const PageWrapper = styled.div`
   min-height: 100vh;
   background: #F0F4F8;
   color: #1A202C;
-  padding: 8rem 2rem 4rem; // Extra padding at the top
+  padding: 8rem 2rem 4rem;
 
   @media (max-width: 768px) {
     padding: 6rem 1rem 2rem;
@@ -51,12 +69,11 @@ const Header = styled.header`
   }
 `;
 
-const DownloadButton = styled.a`
+const PrimaryButton = styled.a`
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  /* margin-bottom: 2.5rem; */ // Removed to allow "OtherDownloads" to be closer
-  margin-bottom: 1rem; // Give a little space
+  margin-bottom: 1rem;
   padding: 1.2rem 2.5rem;
   font-size: 1.2rem;
   font-weight: 600;
@@ -75,46 +92,42 @@ const DownloadButton = styled.a`
   }
 `;
 
-const AppStoreButton = styled(DownloadButton)`
-  background: transparent;
-  border: 2px solid #A0AEC0; // A more muted border color
-  color: #4A5568; // Muted text color
-  box-shadow: none;
-  margin-bottom: 0.75rem; // Less space below
+const SecondaryLink = styled.a`
+  display: inline-block;
+  color: #718096;
+  font-size: 0.9rem;
+  text-decoration: underline;
+  margin: 0 0.5rem 0.5rem 0;
+  transition: color 0.2s;
+  cursor: pointer;
 
   &:hover {
-    background: #EDF2F7;
-    border-color: #718096;
-    transform: translateY(-2px);
-    box-shadow: none;
+    color: #1A202C;
   }
 `;
 
-// 2. ADDED THIS NEW STYLED COMPONENT FOR THE LINKS
-const OtherDownloads = styled.div`
+const DistroGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  padding-top: 2rem;
+  border-top: 1px dashed #E2E8F0;
+`;
+
+const DistroColumn = styled.div`
   display: flex;
-  justify-content: center;
-  gap: 1.5rem;
-  margin-bottom: 2.5rem; // This creates the space before the InfoBox
+  flex-direction: column;
+  gap: 0.5rem;
   
-  a {
-    color: #718096;
-    font-size: 0.9rem;
-    text-decoration: underline;
-    transition: color 0.2s;
-
-    &:hover {
-      color: #1A202C;
-    }
+  h5 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: #A0AEC0;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
   }
-`;
-
-
-const CaptionText = styled.p`
-  font-size: 0.9rem;
-  font-style: italic;
-  color: #718096;
-  margin-bottom: 2.5rem; // Creates space before the next button
 `;
 
 const InfoBox = styled.div`
@@ -141,7 +154,11 @@ const InfoBox = styled.div`
 `;
 
 const SectionTitle = styled.h2`
-  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1.75rem;
   font-weight: 700;
   margin-top: 3rem;
   margin-bottom: 2rem;
@@ -166,132 +183,159 @@ const InstructionStep = styled.div`
     border-radius: 4px;
     font-family: monospace;
     color: #1A202C;
+    word-break: break-word;
   }
 `;
 
-// 3. ADDED OS TYPE DEFINITION
-type OS = 'mac' | 'windows' | 'linux' | 'unknown';
+type OS = 'mac-arm' | 'mac-intel' | 'win-x64' | 'win-arm' | 'linux-arm' | 'linux-x64' | 'unknown';
+
+// --- INSTRUCTION COMPONENTS ---
+const MacInstructions = () => (
+  <>
+    <SectionTitle><Apple size={28} /> macOS Installation</SectionTitle>
+    <InstructionStep>
+      <h3>1. Install</h3>
+      <p>Open the <code>.dmg</code> file and drag the Peak icon into your Applications folder.</p>
+    </InstructionStep>
+    <InstructionStep>
+      <h3>2. Security Check</h3>
+      <p>If macOS prevents opening, go to <strong>System Settings &gt; Privacy & Security</strong> and click <strong>Open Anyway</strong>.</p>
+    </InstructionStep>
+  </>
+);
+
+const WindowsInstructions = () => (
+  <>
+    <SectionTitle><Monitor size={28} /> Windows Installation</SectionTitle>
+    <InstructionStep>
+      <h3>1. Run Installer</h3>
+      <p>Double-click the <code>.exe</code> file to start.</p>
+    </InstructionStep>
+    <InstructionStep>
+      <h3>2. SmartScreen</h3>
+      <p>If Windows Defender appears, click <strong>More info</strong> then <strong>Run anyway</strong>.</p>
+    </InstructionStep>
+  </>
+);
+
+const LinuxInstructions = () => (
+  <>
+    <SectionTitle><Terminal size={28} /> Linux Installation</SectionTitle>
+    <InfoBox>
+      <Package size={24} style={{ flexShrink: 0 }}/>
+      <div>
+        <h4>Which file should I choose?</h4>
+        <p><strong>.deb</strong>: Ubuntu, Debian, Pop!_OS, Mint.<br/>
+        <strong>.rpm</strong>: Fedora, RedHat, CentOS.<br/>
+        <strong>.AppImage</strong>: Universal (Works on almost all distros).</p>
+      </div>
+    </InfoBox>
+    <InstructionStep>
+      <h3>For .deb (Debian/Ubuntu)</h3>
+      <p><code>sudo dpkg -i Peak-linux-amd64.deb</code></p>
+    </InstructionStep>
+    <InstructionStep>
+      <h3>For AppImage</h3>
+      <p>1. Right-click file &gt; Properties &gt; Permissions &gt; Check "Allow executing file as program".</p>
+      <p>2. Or via terminal: <code>chmod +x Peak-linux-x86_64.AppImage</code></p>
+    </InstructionStep>
+  </>
+);
 
 export default function DownloadPage() {
-  
-  // 4. ADDED OS STATE AND EFFECT TO DETECT
   const [os, setOs] = useState<OS>('unknown');
 
   useEffect(() => {
-    // This code only runs in the browser after the page loads
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    if (userAgent.includes('mac') || userAgent.includes('iphone')) {
-      setOs('mac');
-    } else if (userAgent.includes('win')) {
-      setOs('windows');
-    } else if (userAgent.includes('linux')) {
-      setOs('linux');
+    const ua = window.navigator.userAgent.toLowerCase();
+    if (ua.includes('mac')) {
+        // Simple UA check for initial Mac logic
+        setOs(ua.includes('arm') ? 'mac-arm' : 'mac-intel'); 
+    } else if (ua.includes('win')) {
+        setOs(ua.includes('arm') ? 'win-arm' : 'win-x64');
+    } else if (ua.includes('linux')) {
+        // Simplification for Linux
+        setOs(ua.includes('aarch64') || ua.includes('arm') ? 'linux-arm' : 'linux-x64');
     }
-  }, []); // The empty array [] means this runs once on mount
+  }, []);
 
-  // 5. This helper function renders the new "smart" button
-  const renderPrimaryButton = () => {
+  const getPrimaryDownload = () => {
+    // Note: The logic below provides the most suitable installer based on OS detection.
     switch (os) {
-      case 'mac':
-        return (
-          <DownloadButton href="/peak-electron-mac.zip" download>
-            <Download size={24} />
-            Download for macOS
-          </DownloadButton>
-        );
-      case 'windows':
-        return (
-          <DownloadButton href="/peak-electron-win.exe" download>
-            <Download size={24} />
-            Download for Windows
-          </DownloadButton>
-        );
-      case 'linux':
-        return (
-          <DownloadButton href="/peak-electron-linux.AppImage" download>
-            <Download size={24} />
-            Download for Linux
-          </DownloadButton>
-        );
-      default:
-        // Fallback if detection is in progress or fails
-        return (
-          <DownloadButton href="/peak-electron-mac.zip" download>
-            <Download size={24} />
-            Download Peak
-          </DownloadButton>
-        );
+        case 'mac-arm': return { url: mac_arm64, label: 'Download for Mac (Apple Silicon)', filename: 'Peak-mac-arm64.dmg' };
+        case 'mac-intel': return { url: mac_x64, label: 'Download for Mac (Intel)', filename: 'Peak-mac-x64.dmg' };
+        case 'win-arm': return { url: win_arm64, label: 'Download for Windows (ARM)', filename: 'Peak-win-arm64.exe' };
+        case 'win-x64': return { url: win_x64, label: 'Download for Windows', filename: 'Peak-win-x64.exe' };
+        case 'linux-arm': return { url: linux_deb_arm64, label: 'Download .deb (Linux ARM)', filename: 'Peak-linux-arm64.deb' };
+        case 'linux-x64': return { url: linux_deb_x64, label: 'Download .deb (Linux x64)', filename: 'Peak-linux-amd64.deb' };
+        default: return { url: mac_arm64, label: 'Download Peak', filename: 'Peak-mac-arm64.dmg' };
     }
   };
+
+  const primary = getPrimaryDownload();
 
   return (
     <PageWrapper>
       <DownloadContainer>
         <Header>
           <h1>Download Peak</h1>
-          <p>The new multi-platform Peak is here. <br />Available for macOS, Windows, and Linux.</p>
+          <p>Optimized for every platform. Free and open source.</p>
         </Header>
         
-        <div style={{ textAlign: 'center' }}>
-          
-          {/* 6. REPLACED the old button with our new smart button */}
-          {renderPrimaryButton()}
-          
-          {/* 7. ADDED the links for other platforms */}
-          <OtherDownloads>
-            {os !== 'mac' && <a href="/peak-electron-mac.zip" download>Download for macOS</a>}
-            {os !== 'windows' && <a href="/peak-electron-win.exe" download>Download for Windows</a>}
-            {os !== 'linux' && <a href="/peak-electron-linux.AppImage" download>Download for Linux</a>}
-          </OtherDownloads>
-
-          <AppStoreButton 
-            href="https://apps.apple.com/no/app/peak-browser/id6753611346?l=nb&mt=12"
-            target="_blank" 
-            rel="noopener noreferrer"
-          >
-            Download Legacy App (App Store)
-          </AppStoreButton>
-          <CaptionText>
-            Note: This is the old Swift app and may be discontinued.
-          </CaptionText>
-
+        <div style={{ textAlign: 'center', paddingBottom: '1rem' }}>
+          <PrimaryButton href={primary.url} download={primary.filename}>
+            <Download size={24} />
+            {primary.label}
+          </PrimaryButton>
+          <div style={{ fontSize: '0.9rem', color: '#718096' }}>
+            Current Version: {TAG}
+          </div>
         </div>
 
-        {/* *** IMPORTANT ***
-          The section below is the installation guide for the OLD Swift app.
-          You will need to UPDATE this text to be correct for your new Electron app.
-          (e.g., zipping the .app, or using a .dmg installer, or running the .exe)
-        */}
+        <DistroGrid>
+          <DistroColumn>
+            <h5>macOS</h5>
+            <SecondaryLink href={mac_arm64} download="Peak-mac-arm64.dmg">Apple Silicon (M1/M2)</SecondaryLink>
+            <SecondaryLink href={mac_x64} download="Peak-mac-x64.dmg">Intel Chip</SecondaryLink>
+          </DistroColumn>
+
+          <DistroColumn>
+            <h5>Windows</h5>
+            <SecondaryLink href={win_x64} download="Peak-win-x64.exe">Windows x64 (Standard)</SecondaryLink>
+            <SecondaryLink href={win_arm64} download="Peak-win-arm64.exe">Windows ARM64</SecondaryLink>
+          </DistroColumn>
+
+          <DistroColumn>
+            <h5>Linux (Debian/Ubuntu)</h5>
+            <SecondaryLink href={linux_deb_x64} download="Peak-linux-amd64.deb">.deb (x64)</SecondaryLink>
+            <SecondaryLink href={linux_deb_arm64} download="Peak-linux-arm64.deb">.deb (ARM64)</SecondaryLink>
+          </DistroColumn>
+
+          <DistroColumn>
+            <h5>Linux (Universal/RPM)</h5>
+            <SecondaryLink href={linux_AppImage_x64} download="Peak-linux-x86_64.AppImage">.AppImage (x64)</SecondaryLink>
+            <SecondaryLink href={linux_AppImage_arm64} download="Peak-linux-arm64.AppImage">.AppImage (ARM64)</SecondaryLink>
+            <SecondaryLink href={linux_rpm_x64} download="Peak-linux-x86_64.rpm">.rpm (Fedora/RedHat)</SecondaryLink>
+          </DistroColumn>
+        </DistroGrid>
 
         <InfoBox>
           <AlertTriangle size={48} style={{ flexShrink: 0, marginTop: '5px' }}/>
           <div>
-            <h4>A Quick Note on Security</h4>
-            <p>Your OS may show a standard security warning because the app is
-            distributed directly by us. <strong>We guarantee the app is safe.</strong>
-            </p>
+            <h4>Security Note</h4>
+            <p>Peak is safe. You may see a warning from Windows Defender or macOS Gatekeeper because we are an indie developer. Follow the instructions below to install.</p>
           </div>
         </InfoBox>
 
-        <SectionTitle>First-Time Installation Guide (macOS)</SectionTitle>
-
-        <InstructionStep>
-          <h3>Step 1: Unzip and Install</h3>
-          <p>After downloading, double-click the <code>.zip</code> file to unzip it. Then, drag the new <strong>Peak</strong> icon into your <strong>Applications</strong> folder.</p>
-        </InstructionStep>
-
-        <InstructionStep>
-          <h3>Step 2: Approve in System Settings</h3>
-          <p>Go to <strong>Apple menu () &gt; System Settings &gt; Privacy & Security</strong>. Scroll down and you will see a message about &quot;Peak&quot;. Click the <strong>Open Anyway</strong> button.</p>
-        </InstructionStep>
-        
-        <InfoBox>
-          <ChevronsRight size={48} style={{ flexShrink: 0, marginTop: '5px' }}/>
-          <div>
-            <h4>Pro Tip: The Right-Click Method</h4>
-            <p>Alternatively, you can simply <strong>right-click</strong> the app icon, select <strong>Open</strong> from the menu, and then click <strong>Open</strong> on the dialog that appears.</p>
-          </div>
-        </InfoBox>
+        {os.includes('mac') && <MacInstructions />}
+        {os.includes('win') && <WindowsInstructions />}
+        {os.includes('linux') && <LinuxInstructions />}
+        {os === 'unknown' && (
+            <>
+                <MacInstructions />
+                <WindowsInstructions />
+                <LinuxInstructions />
+            </>
+        )}
       </DownloadContainer>
     </PageWrapper>
   );
