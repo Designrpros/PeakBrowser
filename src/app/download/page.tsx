@@ -1,26 +1,32 @@
 'use client';
 
 import styled from "styled-components";
-import React, { useState, useEffect } from 'react';
-import { Download, AlertTriangle, Terminal, Monitor, Apple, Package } from 'lucide-react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Download, AlertTriangle, Terminal, Monitor, Apple, Package, Layers, Zap, ExternalLink } from 'lucide-react';
 
-// --- GITHUB ASSET CONSTANTS (UPDATED TO LATEST TAG v0.0.2) ---
-const REPO = 'Designrpros/peak-multiplatform';
-const TAG = 'v0.0.2'; 
-const BASE_URL = `https://github.com/${REPO}/releases/download/${TAG}/`;
+// --- CONFIGURATION ---
 
-const mac_arm64 = BASE_URL + "Peak-mac-arm64.dmg"; 
-const mac_x64 = BASE_URL + "Peak-mac-x64.dmg";     
+// 1. Multiplatform (Electron) - Uses "latest" endpoint to always get newest assets
+const MULTI_REPO = 'Designrpros/peak-multiplatform';
+const MULTI_BASE = `https://github.com/${MULTI_REPO}/releases/latest/download/`;
 
-const win_x64 = BASE_URL + "Peak-win-x64.exe";     
-const win_arm64 = BASE_URL + "Peak-win-arm64.exe"; 
+// 2. Native (Swift) - Mac App Store
+// FIX: Use 'macappstore://' scheme to force opening the App Store application directly
+const NATIVE_STORE_URL = 'macappstore://apps.apple.com/no/app/peak-browser/id6753611346?l=nb&mt=12';
 
-const linux_AppImage_x64 = BASE_URL + "Peak-linux-x86_64.AppImage";
-const linux_AppImage_arm64 = BASE_URL + "Peak-linux-arm64.AppImage";
-const linux_deb_x64 = BASE_URL + "Peak-linux-amd64.deb"; 
-const linux_deb_arm64 = BASE_URL + "Peak-linux-arm64.deb";
-const linux_rpm_x64 = BASE_URL + "Peak-linux-x86_64.rpm"; 
-// -----------------------------------------
+// --- ASSET MAPS ---
+const MULTI_ASSETS = {
+    mac_arm: { url: MULTI_BASE + "Peak-mac-arm64.dmg", filename: "Peak-mac-arm64.dmg" },
+    mac_intel: { url: MULTI_BASE + "Peak-mac-x64.dmg", filename: "Peak-mac-x64.dmg" },
+    win_arm: { url: MULTI_BASE + "Peak-win-arm64.exe", filename: "Peak-win-arm64.exe" },
+    win_x64: { url: MULTI_BASE + "Peak-win-x64.exe", filename: "Peak-win-x64.exe" },
+    linux_deb_arm: { url: MULTI_BASE + "Peak-linux-arm64.deb", filename: "Peak-linux-arm64.deb" },
+    linux_deb_x64: { url: MULTI_BASE + "Peak-linux-amd64.deb", filename: "Peak-linux-amd64.deb" },
+    linux_app_x64: { url: MULTI_BASE + "Peak-linux-x86_64.AppImage", filename: "Peak.AppImage" },
+    linux_app_arm: { url: MULTI_BASE + "Peak-linux-arm64.AppImage", filename: "Peak-arm.AppImage" },
+    linux_rpm: { url: MULTI_BASE + "Peak-linux-x86_64.rpm", filename: "Peak.rpm" }
+};
 
 // --- STYLED COMPONENTS ---
 const PageWrapper = styled.div`
@@ -37,7 +43,7 @@ const PageWrapper = styled.div`
   }
 `;
 
-const DownloadContainer = styled.div`
+const Container = styled.div`
   width: 100%;
   max-width: 800px;
   background: #fff;
@@ -51,290 +57,198 @@ const DownloadContainer = styled.div`
   }
 `;
 
-const Header = styled.header`
-  text-align: center;
-  margin-bottom: 2.5rem;
-  padding-bottom: 2.5rem;
-  border-bottom: 1px solid #E2E8F0;
-
-  h1 {
-    font-size: 2.75rem;
-    font-weight: 800;
-  }
-
-  p {
-    font-size: 1.2rem;
-    color: #718096;
-    margin-top: 0.5rem;
-  }
-`;
-
-const PrimaryButton = styled.a`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  padding: 1.2rem 2.5rem;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
-  border: none;
+const ToggleContainer = styled.div`
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+  background: #E2E8F0;
+  padding: 4px;
   border-radius: 12px;
-  text-decoration: none;
-  cursor: pointer;
-  box-shadow: 0 4px 14px 0 rgba(74, 144, 226, 0.4);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-  &:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 20px 0 rgba(74, 144, 226, 0.5);
-  }
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
 `;
 
-const SecondaryLink = styled.a`
-  display: inline-block;
-  color: #718096;
-  font-size: 0.9rem;
-  text-decoration: underline;
-  margin: 0 0.5rem 0.5rem 0;
-  transition: color 0.2s;
+const ToggleButton = styled.button<{ active: boolean }>`
+  border: none;
+  background: ${props => props.active ? '#fff' : 'transparent'};
+  color: ${props => props.active ? '#1A202C' : '#718096'};
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
+  box-shadow: ${props => props.active ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'};
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
   &:hover {
     color: #1A202C;
   }
 `;
 
-const DistroGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 1rem;
-  margin-top: 2rem;
+const Header = styled.header`
+  text-align: center;
   margin-bottom: 2rem;
-  padding-top: 2rem;
-  border-top: 1px dashed #E2E8F0;
+  
+  h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+  p { font-size: 1.1rem; color: #718096; }
 `;
 
-const DistroColumn = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  
-  h5 {
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    color: #A0AEC0;
-    margin-bottom: 0.5rem;
-    font-weight: 700;
-  }
+const PrimaryButton = styled.a<{ variant: 'blue' | 'purple' }>`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.2rem 2.5rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #fff;
+  background: ${props => props.variant === 'blue' ? 'linear-gradient(135deg, #4A90E2 0%, #357ABD 100%)' : 'linear-gradient(135deg, #9F7AEA 0%, #805AD5 100%)'};
+  border-radius: 12px;
+  text-decoration: none;
+  box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+
+  &:hover { transform: translateY(-2px); }
+`;
+
+const LinkGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  margin-top: 3rem;
+  border-top: 1px dashed #E2E8F0;
+  padding-top: 2rem;
+`;
+
+const Column = styled.div`
+  display: flex; flex-direction: column; gap: 0.5rem;
+  h5 { text-transform: uppercase; color: #A0AEC0; font-size: 0.85rem; margin-bottom: 0.5rem; }
+  a { color: #718096; font-size: 0.9rem; text-decoration: underline; }
+  a:hover { color: #1A202C; }
 `;
 
 const InfoBox = styled.div`
   background: #EBF8FF;
   border-left: 4px solid #4A90E2;
-  color: #2C5282;
   padding: 1.5rem;
   border-radius: 8px;
-  margin: 2.5rem 0;
+  margin-top: 3rem;
   display: flex;
   gap: 1rem;
-  
-  h4 {
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-    font-size: 1.1rem;
-    font-weight: 700;
-  }
-
-  p {
-    line-height: 1.6;
-    margin: 0;
-  }
+  color: #2C5282;
+  p { margin: 0; line-height: 1.5; }
 `;
 
-const SectionTitle = styled.h2`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin-top: 3rem;
-  margin-bottom: 2rem;
-  text-align: center;
-`;
-
-const InstructionStep = styled.div`
-  margin-bottom: 2rem;
-  
-  h3 {
-    font-size: 1.25rem;
-    font-weight: 700;
-    margin-bottom: 1rem;
-  }
-  p, li {
-    color: #4A5568;
-    line-height: 1.7;
-  }
-  code {
-    background: #E2E8F0;
-    padding: 0.2rem 0.4rem;
-    border-radius: 4px;
-    font-family: monospace;
-    color: #1A202C;
-    word-break: break-word;
-  }
-`;
-
-type OS = 'mac-arm' | 'mac-intel' | 'win-x64' | 'win-arm' | 'linux-arm' | 'linux-x64' | 'unknown';
-
-// --- INSTRUCTION COMPONENTS ---
-const MacInstructions = () => (
-  <>
-    <SectionTitle><Apple size={28} /> macOS Installation</SectionTitle>
-    <InstructionStep>
-      <h3>1. Install</h3>
-      <p>Open the <code>.dmg</code> file and drag the Peak icon into your Applications folder.</p>
-    </InstructionStep>
-    <InstructionStep>
-      <h3>2. Security Check</h3>
-      <p>If macOS prevents opening, go to <strong>System Settings &gt; Privacy &amp; Security</strong> and click <strong>Open Anyway</strong>.</p>
-    </InstructionStep>
-  </>
-);
-
-const WindowsInstructions = () => (
-  <>
-    <SectionTitle><Monitor size={28} /> Windows Installation</SectionTitle>
-    <InstructionStep>
-      <h3>1. Run Installer</h3>
-      <p>Double-click the <code>.exe</code> file to start.</p>
-    </InstructionStep>
-    <InstructionStep>
-      <h3>2. SmartScreen (Security Warning)</h3>
-      {/* FIX: Escaped double quotes using &quot; to prevent React compilation error */}
-      <p>If Windows Defender appears, click <strong>&quot;More info&quot;</strong> then <strong>&quot;Run anyway&quot;</strong>.</p>
-    </InstructionStep>
-  </>
-);
-
-const LinuxInstructions = () => (
-  <>
-    <SectionTitle><Terminal size={28} /> Linux Installation</SectionTitle>
-    <InfoBox>
-      <Package size={24} style={{ flexShrink: 0 }}/>
-      <div>
-        <h4>Which file should I choose?</h4>
-        <p><strong>.deb</strong>: Ubuntu, Debian, Pop!_OS, Mint.<br/>
-        <strong>.rpm</strong>: Fedora, RedHat, CentOS.<br/>
-        <strong>.AppImage</strong>: Universal (Works on almost all distros).</p>
-      </div>
-    </InfoBox>
-    <InstructionStep>
-      <h3>For .deb (Debian/Ubuntu)</h3>
-      <p><code>sudo dpkg -i Peak-linux-amd64.deb</code></p>
-    </InstructionStep>
-    <InstructionStep>
-      <h3>For AppImage</h3>
-      <p>1. Right-click file &gt; Properties &gt; Permissions &gt; Check &quot;Allow executing file as program&quot;.</p>
-      <p>2. Or via terminal: <code>chmod +x Peak-linux-x86_64.AppImage</code></p>
-    </InstructionStep>
-  </>
-);
-
-export default function DownloadPage() {
-  const [os, setOs] = useState<OS>('unknown');
+// --- COMPONENT ---
+function DownloadContent() {
+  const searchParams = useSearchParams();
+  const initialApp = searchParams.get('app') === 'native' ? 'native' : 'multi';
+  const [activeApp, setActiveApp] = useState<'native' | 'multi'>(initialApp);
+  const [os, setOs] = useState('unknown');
 
   useEffect(() => {
-    const ua = window.navigator.userAgent.toLowerCase();
-    if (ua.includes('mac')) {
-        setOs(ua.includes('arm') ? 'mac-arm' : 'mac-intel'); 
-    } else if (ua.includes('win')) {
-        setOs(ua.includes('arm') ? 'win-arm' : 'win-x64');
-    } else if (ua.includes('linux')) {
-        setOs(ua.includes('aarch64') || ua.includes('arm') ? 'linux-arm' : 'linux-x64');
-    }
+    const ua = navigator.userAgent.toLowerCase();
+    if (ua.includes('mac')) setOs(ua.includes('arm') ? 'mac-arm' : 'mac-intel');
+    else if (ua.includes('win')) setOs(ua.includes('arm') ? 'win-arm' : 'win-x64');
+    else if (ua.includes('linux')) setOs('linux');
   }, []);
-
-  const getPrimaryDownload = () => {
-    switch (os) {
-        case 'mac-arm': return { url: mac_arm64, label: 'Download for Mac (Apple Silicon)', filename: 'Peak-mac-arm64.dmg' };
-        case 'mac-intel': return { url: mac_x64, label: 'Download for Mac (Intel)', filename: 'Peak-mac-x64.dmg' };
-        case 'win-arm': return { url: win_arm64, label: 'Download for Windows (ARM)', filename: 'Peak-win-arm64.exe' };
-        case 'win-x64': return { url: win_x64, label: 'Download for Windows', filename: 'Peak-win-x64.exe' };
-        case 'linux-arm': return { url: linux_deb_arm64, label: 'Download .deb (Linux ARM)', filename: 'Peak-linux-arm64.deb' };
-        case 'linux-x64': return { url: linux_deb_x64, label: 'Download .deb (Linux x64)', filename: 'Peak-linux-amd64.deb' };
-        default: return { url: mac_arm64, label: 'Download Peak', filename: 'Peak-mac-arm64.dmg' };
-    }
-  };
-
-  const primary = getPrimaryDownload();
 
   return (
     <PageWrapper>
-      <DownloadContainer>
-        <Header>
-          <h1>Download Peak</h1>
-          <p>Optimized for every platform. Free and open source.</p>
-        </Header>
-        
-        <div style={{ textAlign: 'center', paddingBottom: '1rem' }}>
-          <PrimaryButton href={primary.url} download={primary.filename}>
-            <Download size={24} />
-            {primary.label}
-          </PrimaryButton>
-          <div style={{ fontSize: '0.9rem', color: '#718096' }}>
-            Current Version: {TAG}
-          </div>
-        </div>
+      <ToggleContainer>
+        <ToggleButton active={activeApp === 'native'} onClick={() => setActiveApp('native')}>
+          <Zap size={18} /> Peak Native
+        </ToggleButton>
+        <ToggleButton active={activeApp === 'multi'} onClick={() => setActiveApp('multi')}>
+          <Layers size={18} /> Peak Multiplatform
+        </ToggleButton>
+      </ToggleContainer>
 
-        <DistroGrid>
-          <DistroColumn>
-            <h5>macOS</h5>
-            <SecondaryLink href={mac_arm64} download="Peak-mac-arm64.dmg">Apple Silicon (M1/M2)</SecondaryLink>
-            <SecondaryLink href={mac_x64} download="Peak-mac-x64.dmg">Intel Chip</SecondaryLink>
-          </DistroColumn>
+      <Container>
+        {activeApp === 'native' ? (
+          <>
+            <Header>
+              <h1>Download Peak Native</h1>
+              <p>The lightweight Swift browser for macOS.</p>
+            </Header>
+            <div style={{ textAlign: 'center' }}>
+              {/* FIX: Removed target="_blank" to prevent empty tab when launching external app */}
+              <PrimaryButton href={NATIVE_STORE_URL} variant="blue">
+                <Apple size={24} /> Download on App Store
+              </PrimaryButton>
+              <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#A0AEC0' }}>
+                macOS 12.0+ Required
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <Header>
+              <h1>Download Peak Multiplatform</h1>
+              <p>The all-in-one workspace for Mac, Windows, and Linux.</p>
+            </Header>
+            <div style={{ textAlign: 'center' }}>
+              {/* Smart Button based on OS */}
+              {os.includes('mac') && (
+                <PrimaryButton href={os === 'mac-arm' ? MULTI_ASSETS.mac_arm.url : MULTI_ASSETS.mac_intel.url} variant="purple">
+                  <Download size={24} /> Download for macOS
+                </PrimaryButton>
+              )}
+              {os.includes('win') && (
+                <PrimaryButton href={MULTI_ASSETS.win_x64.url} variant="purple">
+                  <Download size={24} /> Download for Windows
+                </PrimaryButton>
+              )}
+              {(os.includes('linux') || os === 'unknown') && (
+                <PrimaryButton href={MULTI_ASSETS.linux_app_x64.url} variant="purple">
+                  <Download size={24} /> Download AppImage (Linux)
+                </PrimaryButton>
+              )}
+              
+              <div style={{ fontSize: '0.85rem', color: '#A0AEC0', marginTop: '1rem' }}>
+                Downloads always fetch the latest release.
+              </div>
+            </div>
 
-          <DistroColumn>
-            <h5>Windows</h5>
-            <SecondaryLink href={win_x64} download="Peak-win-x64.exe">Windows x64 (Standard)</SecondaryLink>
-            <SecondaryLink href={win_arm64} download="Peak-win-arm64.exe">Windows ARM64</SecondaryLink>
-          </DistroColumn>
-
-          <DistroColumn>
-            <h5>Linux (Debian/Ubuntu)</h5>
-            <SecondaryLink href={linux_deb_x64} download="Peak-linux-amd64.deb">.deb (x64)</SecondaryLink>
-            <SecondaryLink href={linux_deb_arm64} download="Peak-linux-arm64.deb">.deb (ARM64)</SecondaryLink>
-          </DistroColumn>
-
-          <DistroColumn>
-            <h5>Linux (Universal/RPM)</h5>
-            <SecondaryLink href={linux_AppImage_x64} download="Peak-linux-x86_64.AppImage">.AppImage (x64)</SecondaryLink>
-            <SecondaryLink href={linux_AppImage_arm64} download="Peak-linux-arm64.AppImage">.AppImage (ARM64)</SecondaryLink>
-            <SecondaryLink href={linux_rpm_x64} download="Peak-linux-x86_64.rpm">.rpm (Fedora/RedHat)</SecondaryLink>
-          </DistroColumn>
-        </DistroGrid>
+            <LinkGrid>
+              <Column>
+                <h5>macOS</h5>
+                <a href={MULTI_ASSETS.mac_arm.url}>Apple Silicon (DMG)</a>
+                <a href={MULTI_ASSETS.mac_intel.url}>Intel (DMG)</a>
+              </Column>
+              <Column>
+                <h5>Windows</h5>
+                <a href={MULTI_ASSETS.win_x64.url}>Installer (x64 .exe)</a>
+                <a href={MULTI_ASSETS.win_arm.url}>Installer (ARM64 .exe)</a>
+              </Column>
+              <Column>
+                <h5>Linux</h5>
+                <a href={MULTI_ASSETS.linux_deb_x64.url}>Debian/Ubuntu (.deb)</a>
+                <a href={MULTI_ASSETS.linux_app_x64.url}>AppImage (Universal)</a>
+                <a href={MULTI_ASSETS.linux_rpm.url}>Fedora (.rpm)</a>
+              </Column>
+            </LinkGrid>
+          </>
+        )}
 
         <InfoBox>
-          <AlertTriangle size={48} style={{ flexShrink: 0, marginTop: '5px' }}/>
+          <AlertTriangle size={24} style={{ flexShrink: 0 }} />
           <div>
-            <h4>Security Note</h4>
-            <p>Peak is safe. You may see a warning from Windows Defender or macOS Gatekeeper because we are an indie developer. Follow the instructions below to install.</p>
+            <strong>Security Note:</strong> Since Peak Multiplatform is an indie open-source project, you may need to approve the app in your system settings (Gatekeeper on macOS or SmartScreen on Windows) upon first launch.
           </div>
         </InfoBox>
-
-        {os.includes('mac') && <MacInstructions />}
-        {os.includes('win') && <WindowsInstructions />}
-        {os.includes('linux') && <LinuxInstructions />}
-        {os === 'unknown' && (
-            <>
-                <MacInstructions />
-                <WindowsInstructions />
-                <LinuxInstructions />
-            </>
-        )}
-      </DownloadContainer>
+      </Container>
     </PageWrapper>
+  );
+}
+
+export default function DownloadPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <DownloadContent />
+    </Suspense>
   );
 }
