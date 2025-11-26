@@ -123,7 +123,6 @@ export default function NavBar() {
       </NavLeft>
       
       <NavLinks>
-        {isWebApp && (
           <>
              <Link href="/docs" className="nav-item" title="Documentation">
                 <BookOpen size={18} />
@@ -135,15 +134,6 @@ export default function NavBar() {
              
              <Separator />
           </>
-        )}
-
-        {!isWebApp && (
-            <>
-                <Link href="/download" className="nav-item">Overview</Link>
-                <Link href="/#faq" className="nav-item">FAQ</Link>
-                <Separator />
-            </>
-        )}
 
         <NavCTAButton href="/download">
           <Download size={14} /> <span className="hide-mobile">Download</span>
