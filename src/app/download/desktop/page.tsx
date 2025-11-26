@@ -3,7 +3,7 @@
 import styled from "styled-components";
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Download, AlertTriangle, Zap, Layers, Apple, Monitor, Package, ShieldAlert } from 'lucide-react';
+import { Download, AlertTriangle, Zap, Layers, Apple, Monitor, Package, ShieldAlert, Cpu } from 'lucide-react';
 
 // --- CONFIGURATION ---
 const MULTI_REPO = 'Designrpros/peak-multiplatform';
@@ -102,12 +102,19 @@ const Header = styled.header`
   }
 `;
 
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+`;
+
 const PrimaryButton = styled.a<{ $variant: 'blue' | 'purple' }>`
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem 2.5rem;
-  font-size: 1.1rem;
+  padding: 1rem 2rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #fff;
   background: ${props => props.$variant === 'blue' ? 'linear-gradient(135deg, #4A90E2 0%, #357ABD 100%)' : 'linear-gradient(135deg, #6688AA 0%, #88B0D6 100%)'};
@@ -180,7 +187,7 @@ function DesktopDownloadContent() {
 
   useEffect(() => {
     const ua = navigator.userAgent.toLowerCase();
-    if (ua.includes('mac')) setOs(ua.includes('arm') ? 'mac-arm' : 'mac-intel');
+    if (ua.includes('mac')) setOs('mac'); // Treat all Macs as 'mac' to show both options
     else if (ua.includes('win')) setOs(ua.includes('arm') ? 'win-arm' : 'win-x64');
     else if (ua.includes('linux')) setOs('linux');
   }, []);
@@ -208,7 +215,8 @@ function DesktopDownloadContent() {
                 <Apple size={20} /> Download on App Store
               </PrimaryButton>
               <p style={{ marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--peak-secondary)' }}>
-                Requires macOS 12.0 (Monterey) or later.
+                {/* UPDATED REQUIREMENT */}
+                Requires macOS 26 or later.
               </p>
             </div>
           </>
@@ -219,11 +227,19 @@ function DesktopDownloadContent() {
               <p>The complete workspace OS for Mac, Windows, and Linux.<br/>Includes Whiteboard, Terminal, and Dev Tools.</p>
             </Header>
             <div style={{ textAlign: 'center' }}>
-              {os.includes('mac') && (
-                <PrimaryButton href={os === 'mac-arm' ? MULTI_ASSETS.mac_arm.url : MULTI_ASSETS.mac_intel.url} $variant="purple">
-                  <Download size={20} /> Download for macOS
-                </PrimaryButton>
+              
+              {/* MAC OS: Show BOTH options to ensure correct choice */}
+              {os === 'mac' && (
+                <ButtonGroup>
+                    <PrimaryButton href={MULTI_ASSETS.mac_arm.url} $variant="purple">
+                        <Cpu size={18} /> Apple Silicon
+                    </PrimaryButton>
+                    <PrimaryButton href={MULTI_ASSETS.mac_intel.url} $variant="purple">
+                        <Monitor size={18} /> Intel Mac
+                    </PrimaryButton>
+                </ButtonGroup>
               )}
+
               {os.includes('win') && (
                 <PrimaryButton href={MULTI_ASSETS.win_x64.url} $variant="purple">
                   <Download size={20} /> Download for Windows

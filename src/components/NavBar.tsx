@@ -3,7 +3,8 @@
 import Image from "next/image";
 import styled from "styled-components";
 import Link from "next/link";
-import { Github } from "lucide-react"; 
+import { usePathname } from 'next/navigation';
+import { Github, BookOpen, Download } from "lucide-react"; 
 
 const NavBarWrapper = styled.nav`
   position: fixed;
@@ -12,119 +13,140 @@ const NavBarWrapper = styled.nav`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  padding: 0.8rem 1.5rem;
+  
+  /* Seamless Background blending */
+  background-color: var(--window-background-color);
+  border-bottom: 1px solid transparent; 
+  
+  /* Subtle shadow only */
+  box-shadow: 0 1px 0px rgba(0, 0, 0, 0.05);
   z-index: 1000;
-  transition: all 0.3s ease;
 
-  @media (max-width: 768px) {
-    padding: 1rem;
+  @media (prefers-color-scheme: dark) {
+    box-shadow: none;
+    border-bottom: 1px solid var(--border-color);
   }
+`;
+
+const NavLeft = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 `;
 
 const NavLogoContainer = styled(Link)`
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  font-weight: 800;
-  font-size: 1.35rem;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.1rem;
   text-decoration: none;
-  color: #1A202C;
-  letter-spacing: -0.5px;
+  color: var(--peak-primary);
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
+// Logo that inverts based on theme
+const LogoImage = styled(Image)`
+  object-fit: contain;
+  @media (prefers-color-scheme: dark) {
+    filter: invert(1);
+  }
 `;
 
 const NavLinks = styled.div`
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem;
 
   a.nav-item {
-    color: #4A5568;
+    color: var(--peak-secondary);
     text-decoration: none;
     font-weight: 500;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
+    display: flex; 
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     transition: color 0.2s;
+    padding: 4px;
 
     &:hover {
-      color: #1A202C;
+      color: var(--peak-primary);
     }
   }
-
-  @media (max-width: 768px) {
-    display: none;
-  }
 `;
 
-const IconLink = styled.a`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #4A5568;
-  transition: color 0.2s;
-  
-  &:hover {
-    color: #1A202C;
-  }
-`;
-
-// FIX: Changed from styled.a to styled(Link) to prevent nested <a> tags
 const NavCTAButton = styled(Link)`
   display: inline-flex;
   align-items: center;
-  padding: 0.6rem 1.2rem;
-  font-size: 0.9rem;
+  gap: 6px;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
   font-weight: 600;
   color: #fff;
-  background: #1A202C; 
-  border-radius: 10px;
+  background: var(--peak-primary); 
+  border-radius: 8px;
   text-decoration: none;
-  transition: transform 0.1s ease, background-color 0.2s ease;
+  transition: opacity 0.2s ease;
+  margin-left: 8px;
   
   &:hover {
-    background-color: #2D3748;
-    transform: translateY(-1px);
+    opacity: 0.9;
   }
-  
-  &:active {
-    transform: translateY(0);
+
+  @media (prefers-color-scheme: dark) {
+    background: #FFFFFF;
+    color: #000000;
   }
 `;
 
+const Separator = styled.div`
+  width: 1px;
+  height: 20px;
+  background-color: var(--border-color);
+  margin: 0 4px;
+`;
+
 export default function NavBar() {
+  const pathname = usePathname();
+  const isWebApp = pathname === '/';
+
   return (
     <NavBarWrapper>
-      <NavLogoContainer href="/">
-        <Image
-          src="/Peak.png"
-          alt="Peak Logo"
-          width={32} 
-          height={16}
-          priority
-        />
-        Peak
-      </NavLogoContainer>
+      <NavLeft>
+        <NavLogoContainer href="/">
+          <LogoImage src="/Peak.png" alt="Peak" width={28} height={14} priority />
+          Peak
+        </NavLogoContainer>
+      </NavLeft>
       
       <NavLinks>
-        <Link href="/#demo" className="nav-item">Demo</Link>
-        <Link href="/#faq" className="nav-item">FAQ</Link>
-        
-        <IconLink 
-          href="https://github.com/Designrpros/peak-multiplatform" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          aria-label="View on GitHub"
-        >
-          <Github size={20} />
-        </IconLink>
-
-        {/* FIX: Removed wrapping <Link> since NavCTAButton is now a Link itself */}
+          <>
+             <Link href="/docs" className="nav-item" title="Documentation">
+                <BookOpen size={18} />
+             </Link>
+             
+             <a href="https://github.com/Designrpros/peak-multiplatform" target="_blank" rel="noopener noreferrer" className="nav-item" title="GitHub">
+                <Github size={18} />
+             </a>
+             
+             <Separator />
+          </>
         <NavCTAButton href="/download">
-          Download
+          <Download size={14} /> <span className="hide-mobile">Download</span>
         </NavCTAButton>
       </NavLinks>
+
+      <style jsx global>{`
+        @media (max-width: 600px) {
+          .hide-mobile { display: none; }
+        }
+      `}</style>
     </NavBarWrapper>
   );
 }
