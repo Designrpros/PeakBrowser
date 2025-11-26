@@ -1,322 +1,281 @@
 'use client';
 
-import Link from 'next/link';
-import Image from "next/image";
-import styled, { createGlobalStyle } from "styled-components";
-import React, { useState } from 'react';
-import { Library, Bot, Plus, Zap, Box, Layers, Monitor } from 'lucide-react';
+import styled from "styled-components";
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Download, AlertTriangle, Zap, Layers, Apple, Monitor, Package, ShieldAlert } from 'lucide-react';
 
-const GlobalStyle = createGlobalStyle`
-  html { scroll-behavior: smooth; }
-  body { font-family: 'Inter', sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
-`;
+// --- CONFIGURATION ---
+const MULTI_REPO = 'Designrpros/peak-multiplatform';
+const MULTI_BASE = `https://github.com/${MULTI_REPO}/releases/latest/download/`;
+const NATIVE_STORE_URL = 'macappstore://apps.apple.com/no/app/peak-browser/id6753611346?l=nb&mt=12';
 
+// --- ASSET MAPS ---
+const MULTI_ASSETS = {
+    mac_arm: { url: MULTI_BASE + "Peak-mac-arm64.dmg", filename: "Peak-mac-arm64.dmg" },
+    mac_intel: { url: MULTI_BASE + "Peak-mac-x64.dmg", filename: "Peak-mac-x64.dmg" },
+    win_arm: { url: MULTI_BASE + "Peak-win-arm64.exe", filename: "Peak-win-arm64.exe" },
+    win_x64: { url: MULTI_BASE + "Peak-win-x64.exe", filename: "Peak-win-x64.exe" },
+    linux_deb_arm: { url: MULTI_BASE + "Peak-linux-arm64.deb", filename: "Peak-linux-arm64.deb" },
+    linux_deb_x64: { url: MULTI_BASE + "Peak-linux-amd64.deb", filename: "Peak-linux-amd64.deb" },
+    linux_app_x64: { url: MULTI_BASE + "Peak-linux-x86_64.AppImage", filename: "Peak.AppImage" },
+    linux_app_arm: { url: MULTI_BASE + "Peak-linux-arm64.AppImage", filename: "Peak-arm.AppImage" },
+    linux_rpm: { url: MULTI_BASE + "Peak-linux-x86_64.rpm", filename: "Peak.rpm" }
+};
+
+// --- STYLED COMPONENTS ---
 const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  background-color: var(--window-background-color); 
+  background-color: var(--window-background-color);
   color: var(--peak-primary);
-`;
-
-const MainContent = styled.main`
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  margin-top: 70px; 
-`;
-
-const Section = styled.section`
-  width: 100%;
-  padding: 6rem 2rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  @media (max-width: 768px) { padding: 4rem 1rem; }
-`;
-
-// --- Hero Section ---
-const HeroSection = styled(Section)`
-  /* Use CSS Vars for consistent theming or keep the specific landing styling */
-  background: linear-gradient(180deg, #1a202c 0%, #2d3748 100%);
-  color: #fff;
-  padding-top: 8rem;
-  padding-bottom: 8rem;
-  clip-path: polygon(0 0, 100% 0, 100% 95%, 0 100%);
-`;
-
-const HeroTitle = styled.h1`
-  font-size: 4rem;
-  font-weight: 800;
-  margin-bottom: 1rem;
-  letter-spacing: -1px;
-  background: linear-gradient(90deg, #fff, #A0AEC0);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-`;
-
-const HeroSubtitle = styled.p`
-  font-size: 1.25rem;
-  color: #CBD5E0;
-  max-width: 600px;
-  margin-bottom: 4rem;
-  line-height: 1.6;
-`;
-
-// --- Split Choice Grid ---
-const ChoiceGrid = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  max-width: 1000px;
-  width: 100%;
-  margin-top: 2rem;
+  padding: 8rem 2rem 4rem;
 
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+    padding: 6rem 1rem 2rem;
   }
 `;
 
-const ChoiceCard = styled.div`
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 2.5rem;
+const Container = styled.div`
+  width: 100%;
+  max-width: 800px;
+  background-color: var(--text-background-color);
   border-radius: 24px;
-  text-align: left;
-  transition: transform 0.2s, background 0.2s;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+  padding: 3rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
 
-  &:hover {
-    transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.2);
+  @media (max-width: 768px) {
+    padding: 2rem;
   }
 `;
 
-const CardHeader = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-`;
-
-const CardIcon = styled.div<{ $color: string }>`
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: ${props => props.$color};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-`;
-
-const CardTitle = styled.h3`
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #fff;
-`;
-
-const CardDescription = styled.p`
-  color: #A0AEC0;
-  margin-bottom: 2rem;
-  font-size: 1rem;
-  line-height: 1.5;
-  flex-grow: 1;
-`;
-
-const FeatureList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin-bottom: 2rem;
-  
-  li {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    color: #E2E8F0;
-    margin-bottom: 0.75rem;
-    font-size: 0.95rem;
-    
-    svg {
-      color: #48BB78;
-      width: 18px;
-      height: 18px;
-    }
-  }
-`;
-
-const CardButton = styled(Link)<{ $variant: 'blue' | 'purple' }>`
+const ToggleContainer = styled.div`
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 1rem;
+  margin-bottom: 2.5rem;
+  background-color: var(--control-background-color);
+  padding: 4px;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+`;
+
+const ToggleButton = styled.button<{ $active: boolean }>`
+  border: none;
+  background: ${props => props.$active ? 'var(--window-background-color)' : 'transparent'};
+  color: ${props => props.$active ? 'var(--peak-primary)' : 'var(--peak-secondary)'};
+  padding: 0.75rem 1.5rem;
   border-radius: 12px;
   font-weight: 600;
-  text-decoration: none;
-  transition: opacity 0.2s;
-  background: ${props => props.$variant === 'blue' ? '#4A90E2' : '#9F7AEA'};
-  color: white;
-  
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: ${props => props.$active ? '0 2px 8px rgba(0,0,0,0.08)' : 'none'};
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
   &:hover {
-    opacity: 0.9;
+    color: var(--peak-primary);
   }
 `;
 
-// --- General Components ---
-const SectionTitle = styled.h2`
-  font-size: 2.5rem;
-  font-weight: 800;
-  margin-bottom: 3rem;
-  color: #1A202C;
+const Header = styled.header`
+  text-align: center;
+  margin-bottom: 2.5rem;
+  
+  h1 { 
+    font-size: 2.5rem; 
+    font-weight: 800; 
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.5px;
+  }
+  p { 
+    font-size: 1.1rem; 
+    color: var(--peak-secondary);
+    line-height: 1.5;
+  }
 `;
 
-const FaqSection = styled(Section)`
-  background-color: #fff;
-`;
-
-const FaqContainer = styled.div`
-  max-width: 800px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-`;
-
-const FaqItem = styled.div`
-  background: #F7FAFC;
-  border: 1px solid #E2E8F0;
-  border-radius: 16px;
-  overflow: hidden;
-`;
-
-const FaqQuestion = styled.button`
-  width: 100%;
-  padding: 1.5rem;
-  display: flex;
-  justify-content: space-between;
+const PrimaryButton = styled.a<{ $variant: 'blue' | 'purple' }>`
+  display: inline-flex;
   align-items: center;
-  text-align: left;
+  gap: 0.75rem;
+  padding: 1rem 2.5rem;
   font-size: 1.1rem;
   font-weight: 600;
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: #1A202C; 
+  color: #fff;
+  background: ${props => props.$variant === 'blue' ? 'linear-gradient(135deg, #4A90E2 0%, #357ABD 100%)' : 'linear-gradient(135deg, #6688AA 0%, #88B0D6 100%)'};
+  border-radius: 12px;
+  text-decoration: none;
+  box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, opacity 0.2s;
 
-  svg {
-    transition: transform 0.3s ease;
-    color: #1A202C; 
-  }
-
-  &[aria-expanded='true'] svg {
-    transform: rotate(45deg);
+  &:hover { 
+    transform: translateY(-2px); 
+    opacity: 0.95;
   }
 `;
 
-const FaqAnswer = styled.div<{ $isOpen: boolean }>`
-  padding: 0 1.5rem;
-  max-height: ${props => (props.$isOpen ? '300px' : '0')};
-  overflow: hidden;
-  transition: max-height 0.4s ease, padding 0.4s ease;
-  p {
-    padding-bottom: 1.5rem;
-    color: #4A5568;
-    line-height: 1.6;
-    text-align: left; 
-  }
+const LinkGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2rem;
+  margin-top: 3rem;
+  border-top: 1px dashed var(--border-color);
+  padding-top: 2rem;
 `;
 
-const FaqRow = ({ question, answer }: { question: string, answer: string }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const Column = styled.div`
+  display: flex; flex-direction: column; gap: 0.75rem;
+  h5 { 
+    text-transform: uppercase; 
+    color: var(--peak-secondary); 
+    font-size: 0.8rem; 
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    margin-bottom: 0.25rem; 
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  a { 
+    color: var(--peak-primary); 
+    font-size: 0.9rem; 
+    text-decoration: none;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  a:hover { opacity: 1; text-decoration: underline; }
+`;
+
+const InfoBox = styled.div`
+  background-color: var(--control-background-color);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-top: 3rem;
+  display: flex;
+  gap: 1rem;
+  color: var(--peak-secondary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  
+  strong { color: var(--peak-primary); }
+`;
+
+function DesktopDownloadContent() {
+  const searchParams = useSearchParams();
+  const initialApp = searchParams.get('app') === 'native' ? 'native' : 'multi';
+  const [activeApp, setActiveApp] = useState<'native' | 'multi'>(initialApp);
+  const [os, setOs] = useState('unknown');
+
+  useEffect(() => {
+    const ua = navigator.userAgent.toLowerCase();
+    if (ua.includes('mac')) setOs(ua.includes('arm') ? 'mac-arm' : 'mac-intel');
+    else if (ua.includes('win')) setOs(ua.includes('arm') ? 'win-arm' : 'win-x64');
+    else if (ua.includes('linux')) setOs('linux');
+  }, []);
+
   return (
-    <FaqItem>
-      <FaqQuestion onClick={() => setIsOpen(!isOpen)} aria-expanded={isOpen}>
-        {question}
-        <Plus size={20} />
-      </FaqQuestion>
-      <FaqAnswer $isOpen={isOpen}>
-        <p>{answer}</p>
-      </FaqAnswer>
-    </FaqItem>
+    <PageWrapper>
+      <ToggleContainer>
+        <ToggleButton $active={activeApp === 'native'} onClick={() => setActiveApp('native')}>
+          <Zap size={16} /> Peak Native
+        </ToggleButton>
+        <ToggleButton $active={activeApp === 'multi'} onClick={() => setActiveApp('multi')}>
+          <Layers size={16} /> Peak Multiplatform
+        </ToggleButton>
+      </ToggleContainer>
+
+      <Container>
+        {activeApp === 'native' ? (
+          <>
+            <Header>
+              <h1>Peak Native</h1>
+              <p>The ultra-lightweight Swift browser for macOS.<br/>Perfect for speed and simplicity.</p>
+            </Header>
+            <div style={{ textAlign: 'center' }}>
+              <PrimaryButton href={NATIVE_STORE_URL} $variant="blue">
+                <Apple size={20} /> Download on App Store
+              </PrimaryButton>
+              <p style={{ marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--peak-secondary)' }}>
+                Requires macOS 12.0 (Monterey) or later.
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            <Header>
+              <h1>Peak Multiplatform</h1>
+              <p>The complete workspace OS for Mac, Windows, and Linux.<br/>Includes Whiteboard, Terminal, and Dev Tools.</p>
+            </Header>
+            <div style={{ textAlign: 'center' }}>
+              {os.includes('mac') && (
+                <PrimaryButton href={os === 'mac-arm' ? MULTI_ASSETS.mac_arm.url : MULTI_ASSETS.mac_intel.url} $variant="purple">
+                  <Download size={20} /> Download for macOS
+                </PrimaryButton>
+              )}
+              {os.includes('win') && (
+                <PrimaryButton href={MULTI_ASSETS.win_x64.url} $variant="purple">
+                  <Download size={20} /> Download for Windows
+                </PrimaryButton>
+              )}
+              {(os.includes('linux') || os === 'unknown') && (
+                <PrimaryButton href={MULTI_ASSETS.linux_app_x64.url} $variant="purple">
+                  <Download size={20} /> Download AppImage (Linux)
+                </PrimaryButton>
+              )}
+              
+              <div style={{ fontSize: '0.85rem', color: 'var(--peak-secondary)', marginTop: '1.5rem' }}>
+                Downloads always fetch the latest release from GitHub.
+              </div>
+            </div>
+
+            <LinkGrid>
+              <Column>
+                <h5><Apple size={14} /> macOS</h5>
+                <a href={MULTI_ASSETS.mac_arm.url}>Apple Silicon (DMG)</a>
+                <a href={MULTI_ASSETS.mac_intel.url}>Intel (DMG)</a>
+              </Column>
+              <Column>
+                <h5><Monitor size={14} /> Windows</h5>
+                <a href={MULTI_ASSETS.win_x64.url}>Installer (x64 .exe)</a>
+                <a href={MULTI_ASSETS.win_arm.url}>Installer (ARM64 .exe)</a>
+              </Column>
+              <Column>
+                <h5><Package size={14} /> Linux</h5>
+                <a href={MULTI_ASSETS.linux_deb_x64.url}>Debian/Ubuntu (.deb)</a>
+                <a href={MULTI_ASSETS.linux_app_x64.url}>AppImage (Universal)</a>
+                <a href={MULTI_ASSETS.linux_rpm.url}>Fedora (.rpm)</a>
+              </Column>
+            </LinkGrid>
+          </>
+        )}
+
+        <InfoBox>
+          <ShieldAlert size={24} style={{ flexShrink: 0 }} />
+          <div>
+            <strong>Security Notice:</strong> Peak Multiplatform is an open-source project. You may need to approve the app in your system settings (Gatekeeper / SmartScreen) upon first launch as it is not yet signed with an enterprise certificate.
+          </div>
+        </InfoBox>
+      </Container>
+    </PageWrapper>
   );
-};
+}
 
-export default function MarketingPage() {
+export default function DesktopDownloadPage() {
   return (
-    <>
-      <GlobalStyle />
-      <PageWrapper>
-        <MainContent>
-          <HeroSection>
-            <Image src="/Peak.png" alt="Peak Logo" width={120} height={60} style={{filter: 'invert(1)'}} priority />
-            <HeroTitle>Two Ways to Peak.</HeroTitle>
-            <HeroSubtitle>
-              One philosophy: Uninterrupted Flow. Choose the browser that fits your workflow.
-            </HeroSubtitle>
-            
-            <ChoiceGrid>
-              <ChoiceCard>
-                <CardHeader>
-                  <CardIcon $color="#4A90E2"><Zap size={24} /></CardIcon>
-                  <CardTitle>Peak Native</CardTitle>
-                </CardHeader>
-                <CardDescription>
-                  The original lightweight companion. Built with Swift for macOS. Perfect for fast browsing and quick notes without the bloat.
-                </CardDescription>
-                <FeatureList>
-                  <li><Zap /> Native macOS Performance</li>
-                  <li><Monitor /> Lightweight WebKit Engine</li>
-                  <li><Library /> Basic Notes & Bookmarks</li>
-                  <li><Bot /> Chat with LLMs</li>
-                </FeatureList>
-                <CardButton href="/download/desktop?app=native" $variant="blue">Download Native</CardButton>
-              </ChoiceCard>
-
-              <ChoiceCard>
-                <CardHeader>
-                  <CardIcon $color="#805AD5"><Layers size={24} /></CardIcon>
-                  <CardTitle>Peak Multiplatform</CardTitle>
-                </CardHeader>
-                <CardDescription>
-                  The complete OS for your workflow. Built with Electron for Mac, Windows, and Linux. Includes advanced developer tools.
-                </CardDescription>
-                <FeatureList>
-                  <li><Box /> Cross-Platform (Win/Lin/Mac)</li>
-                  <li><Layers /> Kanban & Whiteboards</li>
-                  <li><Bot /> Project View & Terminal</li>
-                  <li><Library /> Advanced AI Context</li>
-                </FeatureList>
-                <CardButton href="/download/desktop?app=multi" $variant="purple">Download Multiplatform</CardButton>
-              </ChoiceCard>
-            </ChoiceGrid>
-          </HeroSection>
-
-          <FaqSection id="faq">
-            <SectionTitle>Which one is right for me?</SectionTitle>
-            <FaqContainer>
-              <FaqRow 
-                question="What is the main difference?"
-                answer="Peak Native is a lightweight Swift app designed exclusively for macOS for speed and simplicity. Peak Multiplatform is a more powerful 'Work OS' built on Electron that runs on Windows, Linux, and macOS, featuring integrated tools like Kanban boards, Whiteboards, and Terminals."
-              />
-              <FaqRow 
-                question="Can I use both?"
-                answer="Absolutely. They are separate applications. You might use Peak Native for quick personal browsing and Peak Multiplatform for your deep work and development projects."
-              />
-              <FaqRow 
-                question="Are they both free?"
-                answer="Yes, both versions of Peak are free to download. However, to use the AI chat features in either version, you will need to provide your own OpenRouter API key."
-              />
-            </FaqContainer>
-          </FaqSection>
-
-        </MainContent>
-      </PageWrapper>
-    </>
+    <Suspense fallback={<div>Loading...</div>}>
+      <DesktopDownloadContent />
+    </Suspense>
   );
 }
