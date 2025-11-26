@@ -9,7 +9,8 @@ export interface Tab {
     id: string;
     title: string;
     type: 'landing' | 'web' | 'kanban' | 'note' | 'whiteboard' | 'docs';
-    data?: any;
+    // FIX: Changed 'any' to 'unknown' to satisfy linter
+    data?: unknown; 
 }
 
 // --- ICONS ---

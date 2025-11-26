@@ -2,7 +2,7 @@
 
 import styled from "styled-components";
 import Link from "next/link";
-import { BookOpen, Terminal, Layers, MessageSquare, Command, Github, ArrowRight } from 'lucide-react';
+import { BookOpen, Terminal, Layers, MessageSquare, Command, Github } from 'lucide-react';
 
 // --- STYLED COMPONENTS ---
 
@@ -250,12 +250,12 @@ export default function DocsPage() {
           
           <h3>Configuration</h3>
           <p>
-            To enable AI features, navigate to the <strong>Settings</strong> panel (accessible from the landing page footer) and enter your OpenRouter API Key. Your key is encrypted and stored locally on your device's Keychain.
+            To enable AI features, navigate to the <strong>Settings</strong> panel (accessible from the landing page footer) and enter your OpenRouter API Key. Your key is encrypted and stored locally on your device&apos;s Keychain.
           </p>
           
           <h3>Context Awareness</h3>
           <p>
-            When using the AI Assistant inside a Project tab, Peak can read your currently open file. This allows you to ask context-specific questions like <em>"Refactor this function"</em> or <em>"Explain this logic"</em> without copy-pasting code.
+            When using the AI Assistant inside a Project tab, Peak can read your currently open file. This allows you to ask context-specific questions like <em>&quot;Refactor this function&quot;</em> or <em>&quot;Explain this logic&quot;</em> without copy-pasting code.
           </p>
         </section>
         

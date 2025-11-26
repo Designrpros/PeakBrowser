@@ -15,11 +15,9 @@ const NavBarWrapper = styled.nav`
   align-items: center;
   padding: 0.8rem 1.5rem;
   
-  /* Seamless Background blending */
   background-color: var(--window-background-color);
   border-bottom: 1px solid transparent; 
   
-  /* Subtle shadow only */
   box-shadow: 0 1px 0px rgba(0, 0, 0, 0.05);
   z-index: 1000;
 
@@ -50,7 +48,6 @@ const NavLogoContainer = styled(Link)`
   }
 `;
 
-// Logo that inverts based on theme
 const LogoImage = styled(Image)`
   object-fit: contain;
   @media (prefers-color-scheme: dark) {
@@ -126,6 +123,7 @@ export default function NavBar() {
       </NavLeft>
       
       <NavLinks>
+        {isWebApp && (
           <>
              <Link href="/docs" className="nav-item" title="Documentation">
                 <BookOpen size={18} />
@@ -137,6 +135,16 @@ export default function NavBar() {
              
              <Separator />
           </>
+        )}
+
+        {!isWebApp && (
+            <>
+                <Link href="/download" className="nav-item">Overview</Link>
+                <Link href="/#faq" className="nav-item">FAQ</Link>
+                <Separator />
+            </>
+        )}
+
         <NavCTAButton href="/download">
           <Download size={14} /> <span className="hide-mobile">Download</span>
         </NavCTAButton>

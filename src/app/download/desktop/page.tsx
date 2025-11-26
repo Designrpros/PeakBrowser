@@ -3,14 +3,15 @@
 import styled from "styled-components";
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Download, AlertTriangle, Zap, Layers, Apple, Monitor, Package, ShieldAlert, Cpu } from 'lucide-react';
+import { Download, Zap, Layers, Apple, Monitor, Package, ShieldAlert, Cpu } from 'lucide-react';
 
-// --- CONFIGURATION ---
+// ... (Keep the rest of your configuration and components exactly as they were)
+// Re-pasting the component to ensure it's complete:
+
 const MULTI_REPO = 'Designrpros/peak-multiplatform';
 const MULTI_BASE = `https://github.com/${MULTI_REPO}/releases/latest/download/`;
 const NATIVE_STORE_URL = 'macappstore://apps.apple.com/no/app/peak-browser/id6753611346?l=nb&mt=12';
 
-// --- ASSET MAPS ---
 const MULTI_ASSETS = {
     mac_arm: { url: MULTI_BASE + "Peak-mac-arm64.dmg", filename: "Peak-mac-arm64.dmg" },
     mac_intel: { url: MULTI_BASE + "Peak-mac-x64.dmg", filename: "Peak-mac-x64.dmg" },
@@ -23,7 +24,6 @@ const MULTI_ASSETS = {
     linux_rpm: { url: MULTI_BASE + "Peak-linux-x86_64.rpm", filename: "Peak.rpm" }
 };
 
-// --- STYLED COMPONENTS ---
 const PageWrapper = styled.div`
   display: flex;
   flex-direction: column;
@@ -187,7 +187,7 @@ function DesktopDownloadContent() {
 
   useEffect(() => {
     const ua = navigator.userAgent.toLowerCase();
-    if (ua.includes('mac')) setOs('mac'); // Treat all Macs as 'mac' to show both options
+    if (ua.includes('mac')) setOs('mac');
     else if (ua.includes('win')) setOs(ua.includes('arm') ? 'win-arm' : 'win-x64');
     else if (ua.includes('linux')) setOs('linux');
   }, []);
@@ -215,8 +215,7 @@ function DesktopDownloadContent() {
                 <Apple size={20} /> Download on App Store
               </PrimaryButton>
               <p style={{ marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--peak-secondary)' }}>
-                {/* UPDATED REQUIREMENT */}
-                Requires macOS 26 or later.
+                Requires macOS 15.0 (Sequoia) or later.
               </p>
             </div>
           </>
@@ -228,7 +227,6 @@ function DesktopDownloadContent() {
             </Header>
             <div style={{ textAlign: 'center' }}>
               
-              {/* MAC OS: Show BOTH options to ensure correct choice */}
               {os === 'mac' && (
                 <ButtonGroup>
                     <PrimaryButton href={MULTI_ASSETS.mac_arm.url} $variant="purple">
