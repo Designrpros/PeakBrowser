@@ -3,7 +3,8 @@
 import styled from "styled-components";
 import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Download, AlertTriangle, Zap, Layers, Apple, Monitor, Package, ShieldAlert } from 'lucide-react';
+import { Download, Zap, Layers, Apple, Monitor, Package, ShieldAlert, Cpu } from 'lucide-react';
+import { trackEvent, GA_CATEGORY } from '@/lib/analytics';
 
 // --- CONFIGURATION ---
 const MULTI_REPO = 'Designrpros/peak-multiplatform';
@@ -102,12 +103,19 @@ const Header = styled.header`
   }
 `;
 
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+`;
+
 const PrimaryButton = styled.a<{ $variant: 'blue' | 'purple' }>`
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 1rem 2.5rem;
-  font-size: 1.1rem;
+  padding: 1rem 2rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #fff;
   background: ${props => props.$variant === 'blue' ? 'linear-gradient(135deg, #4A90E2 0%, #357ABD 100%)' : 'linear-gradient(135deg, #6688AA 0%, #88B0D6 100%)'};
@@ -174,16 +182,32 @@ const InfoBox = styled.div`
 
 function DesktopDownloadContent() {
   const searchParams = useSearchParams();
-  const initialApp = searchParams.get('app') === 'native' ? 'native' : 'multi';
-  const [activeApp, setActiveApp] = useState<'native' | 'multi'>(initialApp);
+  // Safe default
+  const [activeApp, setActiveApp] = useState<'native' | 'multi'>('multi');
   const [os, setOs] = useState('unknown');
+
+  // Strictly enforce URL param once loaded
+  useEffect(() => {
+    const appParam = searchParams.get('app');
+    if (appParam === 'native') setActiveApp('native');
+    else if (appParam === 'multi') setActiveApp('multi');
+  }, [searchParams]);
 
   useEffect(() => {
     const ua = navigator.userAgent.toLowerCase();
-    if (ua.includes('mac')) setOs(ua.includes('arm') ? 'mac-arm' : 'mac-intel');
+    if (ua.includes('mac')) setOs('mac');
     else if (ua.includes('win')) setOs(ua.includes('arm') ? 'win-arm' : 'win-x64');
     else if (ua.includes('linux')) setOs('linux');
   }, []);
+
+  // Analytics Helper
+  const handleDownloadClick = (osName: string, architecture: string) => {
+    trackEvent({
+        action: 'download_initiated',
+        category: GA_CATEGORY.DOWNLOAD,
+        label: `${osName} - ${architecture}`
+    });
+  };
 
   return (
     <PageWrapper>
@@ -204,11 +228,15 @@ function DesktopDownloadContent() {
               <p>The ultra-lightweight Swift browser for macOS.<br/>Perfect for speed and simplicity.</p>
             </Header>
             <div style={{ textAlign: 'center' }}>
-              <PrimaryButton href={NATIVE_STORE_URL} $variant="blue">
+              <PrimaryButton 
+                href={NATIVE_STORE_URL} 
+                $variant="blue"
+                onClick={() => handleDownloadClick('macOS', 'Native App Store')}
+              >
                 <Apple size={20} /> Download on App Store
               </PrimaryButton>
               <p style={{ marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--peak-secondary)' }}>
-                Requires macOS 12.0 (Monterey) or later.
+                Requires macOS 26.0 or later.
               </p>
             </div>
           </>
@@ -219,18 +247,41 @@ function DesktopDownloadContent() {
               <p>The complete workspace OS for Mac, Windows, and Linux.<br/>Includes Whiteboard, Terminal, and Dev Tools.</p>
             </Header>
             <div style={{ textAlign: 'center' }}>
-              {os.includes('mac') && (
-                <PrimaryButton href={os === 'mac-arm' ? MULTI_ASSETS.mac_arm.url : MULTI_ASSETS.mac_intel.url} $variant="purple">
-                  <Download size={20} /> Download for macOS
-                </PrimaryButton>
+              
+              {os === 'mac' && (
+                <ButtonGroup>
+                    <PrimaryButton 
+                        href={MULTI_ASSETS.mac_arm.url} 
+                        $variant="purple"
+                        onClick={() => handleDownloadClick('macOS', 'Apple Silicon')}
+                    >
+                        <Cpu size={18} /> Apple Silicon
+                    </PrimaryButton>
+                    <PrimaryButton 
+                        href={MULTI_ASSETS.mac_intel.url} 
+                        $variant="purple"
+                        onClick={() => handleDownloadClick('macOS', 'Intel')}
+                    >
+                        <Monitor size={18} /> Intel Mac
+                    </PrimaryButton>
+                </ButtonGroup>
               )}
+
               {os.includes('win') && (
-                <PrimaryButton href={MULTI_ASSETS.win_x64.url} $variant="purple">
+                <PrimaryButton 
+                    href={MULTI_ASSETS.win_x64.url} 
+                    $variant="purple"
+                    onClick={() => handleDownloadClick('Windows', 'x64')}
+                >
                   <Download size={20} /> Download for Windows
                 </PrimaryButton>
               )}
               {(os.includes('linux') || os === 'unknown') && (
-                <PrimaryButton href={MULTI_ASSETS.linux_app_x64.url} $variant="purple">
+                <PrimaryButton 
+                    href={MULTI_ASSETS.linux_app_x64.url} 
+                    $variant="purple"
+                    onClick={() => handleDownloadClick('Linux', 'AppImage')}
+                >
                   <Download size={20} /> Download AppImage (Linux)
                 </PrimaryButton>
               )}
@@ -243,19 +294,19 @@ function DesktopDownloadContent() {
             <LinkGrid>
               <Column>
                 <h5><Apple size={14} /> macOS</h5>
-                <a href={MULTI_ASSETS.mac_arm.url}>Apple Silicon (DMG)</a>
-                <a href={MULTI_ASSETS.mac_intel.url}>Intel (DMG)</a>
+                <a href={MULTI_ASSETS.mac_arm.url} onClick={() => handleDownloadClick('macOS', 'Apple Silicon DMG')}>Apple Silicon (DMG)</a>
+                <a href={MULTI_ASSETS.mac_intel.url} onClick={() => handleDownloadClick('macOS', 'Intel DMG')}>Intel (DMG)</a>
               </Column>
               <Column>
                 <h5><Monitor size={14} /> Windows</h5>
-                <a href={MULTI_ASSETS.win_x64.url}>Installer (x64 .exe)</a>
-                <a href={MULTI_ASSETS.win_arm.url}>Installer (ARM64 .exe)</a>
+                <a href={MULTI_ASSETS.win_x64.url} onClick={() => handleDownloadClick('Windows', 'x64 Installer')}>Installer (x64 .exe)</a>
+                <a href={MULTI_ASSETS.win_arm.url} onClick={() => handleDownloadClick('Windows', 'ARM64 Installer')}>Installer (ARM64 .exe)</a>
               </Column>
               <Column>
                 <h5><Package size={14} /> Linux</h5>
-                <a href={MULTI_ASSETS.linux_deb_x64.url}>Debian/Ubuntu (.deb)</a>
-                <a href={MULTI_ASSETS.linux_app_x64.url}>AppImage (Universal)</a>
-                <a href={MULTI_ASSETS.linux_rpm.url}>Fedora (.rpm)</a>
+                <a href={MULTI_ASSETS.linux_deb_x64.url} onClick={() => handleDownloadClick('Linux', 'Debian')}>Debian/Ubuntu (.deb)</a>
+                <a href={MULTI_ASSETS.linux_app_x64.url} onClick={() => handleDownloadClick('Linux', 'AppImage')}>AppImage (Universal)</a>
+                <a href={MULTI_ASSETS.linux_rpm.url} onClick={() => handleDownloadClick('Linux', 'Fedora')}>Fedora (.rpm)</a>
               </Column>
             </LinkGrid>
           </>

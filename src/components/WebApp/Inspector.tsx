@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import styled from "styled-components";
 import { X, Search, Clock, KanbanSquare, Trash2, ExternalLink } from 'lucide-react';
+import { trackEvent, GA_CATEGORY } from '@/lib/analytics'; // Analytics Import
 
 // --- TYPES ---
 interface HistoryItem {
@@ -150,9 +151,22 @@ export default function Inspector({ visible, mode, onClose, onOpenItem }: Inspec
 
     const clearHistory = () => {
         if (mode === 'history') {
+            trackEvent({
+                action: 'clear_history',
+                category: GA_CATEGORY.BROWSER
+            });
             localStorage.removeItem('peak_web_history');
             setItems([]);
         }
+    };
+    
+    const handleItemClick = (type: string, query: string) => {
+        trackEvent({
+            action: 'restore_item',
+            category: GA_CATEGORY.BROWSER,
+            label: type // 'web' or 'kanban'
+        });
+        onOpenItem(type, query);
     };
 
     return (
@@ -181,7 +195,7 @@ export default function Inspector({ visible, mode, onClose, onOpenItem }: Inspec
                     </EmptyState>
                 ) : (
                     items.map((item, i) => (
-                        <ListItem key={i} onClick={() => onOpenItem(item.type, item.query)}>
+                        <ListItem key={i} onClick={() => handleItemClick(item.type, item.query)}>
                             <ItemIcon>
                                 {item.type === 'web' ? <Search size={14} /> : <KanbanSquare size={14} />}
                             </ItemIcon>

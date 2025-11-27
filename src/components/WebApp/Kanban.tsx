@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from "styled-components";
 import { Plus, Trash2 } from 'lucide-react';
+import { trackEvent, GA_CATEGORY } from '@/lib/analytics'; // Analytics Import
 
 // --- TYPES ---
 interface Task {
@@ -316,6 +317,13 @@ export default function KanbanBoard({ title }: KanbanProps) {
                 const [task] = sourceCol.tasks.splice(taskIndex, 1);
                 targetCol.tasks.push(task);
                 setColumns(newColumns);
+                
+                // Analytics: Track task movement
+                trackEvent({
+                    action: 'move_task',
+                    category: GA_CATEGORY.KANBAN,
+                    label: `${sourceCol.title} -> ${targetCol.title}`
+                });
             }
         }
         
@@ -344,6 +352,13 @@ export default function KanbanBoard({ title }: KanbanProps) {
             }
             return col;
         }));
+
+        // Analytics: Track new task creation
+        trackEvent({
+            action: 'create_task',
+            category: GA_CATEGORY.KANBAN,
+            label: 'New Task Added'
+        });
 
         setAddingColId(null);
         setNewTaskText("");

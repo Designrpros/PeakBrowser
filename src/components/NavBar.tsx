@@ -5,6 +5,7 @@ import styled from "styled-components";
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
 import { Github, BookOpen, Download } from "lucide-react"; 
+import { trackEvent, GA_CATEGORY } from '@/lib/analytics'; // Analytics Import
 
 const NavBarWrapper = styled.nav`
   position: fixed;
@@ -113,10 +114,18 @@ export default function NavBar() {
   const pathname = usePathname();
   const isWebApp = pathname === '/';
 
+  const handleNavClick = (label: string) => {
+    trackEvent({
+        action: 'nav_click',
+        category: GA_CATEGORY.NAVIGATION,
+        label: label
+    });
+  };
+
   return (
     <NavBarWrapper>
       <NavLeft>
-        <NavLogoContainer href="/">
+        <NavLogoContainer href="/" onClick={() => handleNavClick('Logo Home')}>
           <LogoImage src="/Peak.png" alt="Peak" width={28} height={14} priority />
           Peak
         </NavLogoContainer>
@@ -124,18 +133,33 @@ export default function NavBar() {
       
       <NavLinks>
           <>
-             <Link href="/docs" className="nav-item" title="Documentation">
+             <Link 
+                href="/docs" 
+                className="nav-item" 
+                title="Documentation"
+                onClick={() => handleNavClick('Documentation')}
+             >
                 <BookOpen size={18} />
              </Link>
              
-             <a href="https://github.com/Designrpros/peak-multiplatform" target="_blank" rel="noopener noreferrer" className="nav-item" title="GitHub">
+             <a 
+                href="https://github.com/Designrpros/peak-multiplatform" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="nav-item" 
+                title="GitHub"
+                onClick={() => handleNavClick('GitHub Repo')}
+             >
                 <Github size={18} />
              </a>
              
              <Separator />
           </>
 
-        <NavCTAButton href="/download">
+        <NavCTAButton 
+            href="/download" 
+            onClick={() => handleNavClick('Download CTA')}
+        >
           <Download size={14} /> <span className="hide-mobile">Download</span>
         </NavCTAButton>
       </NavLinks>

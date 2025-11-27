@@ -5,6 +5,7 @@ import styled, { keyframes } from "styled-components";
 import { ArrowUp, Globe, FileText, Terminal, Folder, PenTool, BookOpen, HardDrive, ChevronDown, Check, MessageSquare, CheckSquare, Zap, Layers, Box, Monitor, Library, Bot, Lock } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { trackEvent, GA_CATEGORY } from '@/lib/analytics';
 
 // --- CONFIGURATION ---
 
@@ -305,11 +306,25 @@ export default function LandingPage({ onOpenTab }: LandingPageProps) {
         // Check if Desktop Only
         const isDesktopMode = DESKTOP_MODES.some(m => m.id === mode.id);
         if (isDesktopMode) {
+            // Analytics: Track attempted use of desktop features
+            trackEvent({
+                action: 'blocked_feature_attempt',
+                category: GA_CATEGORY.DOWNLOAD,
+                label: mode.id // e.g., 'Terminal', 'Whiteboard'
+            });
+
             alert(`The "${mode.id}" feature requires the desktop application.\n\nPlease scroll down to download Peak for your OS.`);
             return;
         }
 
         if (mode.id === 'Search') {
+            // Analytics: Track search query engine
+            trackEvent({
+                action: 'search_query',
+                category: GA_CATEGORY.SEARCH,
+                label: engine.name // Track preference (Google, DuckDuckGo, etc.)
+            });
+
             saveToHistory(input);
             const engineUrl = engine.url;
             onOpenTab('web', input, { engineUrl });
@@ -441,7 +456,7 @@ export default function LandingPage({ onOpenTab }: LandingPageProps) {
                     </HeroSubtitle>
                     
                     <ChoiceGrid>
-                        {/* PEAK NATIVE */}
+                        {/* PEAK NATIVE - UPDATED LINK */}
                         <ChoiceCard>
                             <CardHeader>
                                 <CardIcon $color="#4A90E2"><Zap size={24} /></CardIcon>
@@ -456,10 +471,10 @@ export default function LandingPage({ onOpenTab }: LandingPageProps) {
                                 <li><Library /> Basic Notes & Bookmarks</li>
                                 <li><Bot /> Chat with LLMs</li>
                             </FeatureList>
-                            <CardButton href="/download/desktop?app=native" $variant="blue">Download Native</CardButton>
+                            <CardButton href="/download?app=native" $variant="blue">Download Native</CardButton>
                         </ChoiceCard>
 
-                        {/* PEAK MULTIPLATFORM */}
+                        {/* PEAK MULTIPLATFORM - UPDATED LINK */}
                         <ChoiceCard>
                             <CardHeader>
                                 <CardIcon $color="#805AD5"><Layers size={24} /></CardIcon>
@@ -474,7 +489,7 @@ export default function LandingPage({ onOpenTab }: LandingPageProps) {
                                 <li><Bot /> Project View & Terminal</li>
                                 <li><Library /> Advanced AI Context</li>
                             </FeatureList>
-                            <CardButton href="/download/desktop?app=multi" $variant="purple">Download Multiplatform</CardButton>
+                            <CardButton href="/download?app=multi" $variant="purple">Download Multiplatform</CardButton>
                         </ChoiceCard>
                     </ChoiceGrid>
                 </Section>

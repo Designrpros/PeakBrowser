@@ -2,6 +2,7 @@
 
 import styled from "styled-components";
 import Link from "next/link";
+import { trackEvent, GA_CATEGORY } from '@/lib/analytics'; // Analytics Import
 
 const FooterWrapper = styled.footer`
   width: 100%;
@@ -27,11 +28,20 @@ const FooterWrapper = styled.footer`
 `;
 
 export default function Footer() {
+  
+  const handleFooterClick = (label: string) => {
+    trackEvent({
+        action: 'footer_click',
+        category: GA_CATEGORY.NAVIGATION,
+        label: label
+    });
+  };
+
   return (
     <FooterWrapper>
       <div>
-        <Link href="/privacy">Privacy Policy</Link>
-        <Link href="/terms">Terms of Service</Link>
+        <Link href="/privacy" onClick={() => handleFooterClick('Privacy Policy')}>Privacy Policy</Link>
+        <Link href="/terms" onClick={() => handleFooterClick('Terms of Service')}>Terms of Service</Link>
       </div>
       <p style={{ marginTop: '1rem', opacity: 0.8 }}>&copy; {new Date().getFullYear()} Peak Browser. All rights reserved.</p>
     </FooterWrapper>

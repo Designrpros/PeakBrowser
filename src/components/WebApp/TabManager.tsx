@@ -7,7 +7,7 @@ import LandingPage from './LandingPage';
 import KanbanBoard from './Kanban';
 import WebFrame from './WebFrame';
 import Inspector from './Inspector';
-// Removed internal Docs component import since we use iframe now
+import { trackEvent, GA_CATEGORY } from '@/lib/analytics'; // Analytics Import
 
 const AppContainer = styled.div`
     display: flex;
@@ -59,6 +59,13 @@ export default function TabManager() {
     const [inspectorMode, setInspectorMode] = useState<'history' | 'tasks' | null>(null);
 
     const handleNewTab = () => {
+        // Analytics: Track new tab creation
+        trackEvent({
+            action: 'new_tab',
+            category: GA_CATEGORY.BROWSER,
+            label: 'User clicked + button'
+        });
+
         const id = Date.now().toString();
         setTabs([...tabs, { id, title: 'New Tab', type: 'landing' }]);
         setActiveTabId(id);
@@ -66,6 +73,13 @@ export default function TabManager() {
 
     const handleCloseTab = (id: string, e: React.MouseEvent) => {
         e.stopPropagation();
+
+        // Analytics: Track tab closing
+        trackEvent({
+            action: 'close_tab',
+            category: GA_CATEGORY.BROWSER
+        });
+
         const newTabs = tabs.filter(t => t.id !== id);
         setTabs(newTabs);
         if (activeTabId === id) {
@@ -75,6 +89,13 @@ export default function TabManager() {
     };
 
     const handleOpenFromLanding = (type: string, query: string, extraData?: { engineUrl?: string }) => {
+        // Analytics: Track feature usage
+        trackEvent({
+            action: 'launch_mode',
+            category: GA_CATEGORY.BROWSER,
+            label: type // 'web', 'kanban', or 'docs'
+        });
+
         let title = query || 'New Tab';
         let finalType: Tab['type'] = 'web'; 
 
@@ -145,7 +166,6 @@ export default function TabManager() {
                             {tab.type === 'kanban' && <KanbanBoard title={tab.title} />}
                             {tab.type === 'web' && <WebFrame url={(tab.data as { url: string })?.url} />}
                             
-                            {/* FIX: Correctly renders DevDocs iframe */}
                             {tab.type === 'docs' && (
                                 <IframeContainer>
                                     <iframe 

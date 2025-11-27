@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import styled from "styled-components";
 import { ExternalLink, Globe } from 'lucide-react';
+import { trackEvent, GA_CATEGORY } from '@/lib/analytics'; // Analytics Import
 
 const Container = styled.div`
     display: flex;
@@ -83,16 +84,30 @@ const Button = styled.a`
 
 export default function WebFrame({ url }: { url: string }) {
     
-    // Auto-open logic (optional, can be annoying, but effective for 'Launcher' feel)
+    // Auto-open logic 
     useEffect(() => {
         if (url) {
-            // Small delay to allow UI to render first
+            // Track auto-open attempts
+            trackEvent({
+                action: 'auto_open_url',
+                category: GA_CATEGORY.EXTERNAL,
+                label: url
+            });
+
             const timer = setTimeout(() => {
                 window.open(url, '_blank');
             }, 500);
             return () => clearTimeout(timer);
         }
     }, [url]);
+
+    const handleManualOpen = () => {
+        trackEvent({
+            action: 'manual_open_url',
+            category: GA_CATEGORY.EXTERNAL,
+            label: url
+        });
+    };
 
     return (
         <Container>
@@ -106,7 +121,12 @@ export default function WebFrame({ url }: { url: string }) {
                     If it was blocked, click the button below.
                 </p>
                 <UrlText>{url}</UrlText>
-                <Button href={url} target="_blank" rel="noopener noreferrer">
+                <Button 
+                    href={url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={handleManualOpen}
+                >
                     Open Website <ExternalLink size={18} />
                 </Button>
             </Card>
