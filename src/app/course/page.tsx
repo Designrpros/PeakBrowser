@@ -347,7 +347,7 @@ export default function CoursePage() {
             <ol>
                 <li>Close the terminal tab (or keep it open if you like).</li>
                 <li>Open a <strong>New Tab</strong>.</li>
-                <li>Click on the <strong>Project</strong> icon or type "Project".</li>
+                <li>Click on the <strong>Project</strong> icon or type &quot;Project&quot;.</li>
                 <li>Navigate to the <code>my-peak-app</code> folder we just created and select <strong>Open</strong>.</li>
             </ol>
 
@@ -381,11 +381,11 @@ export default function CoursePage() {
             
             <NoteBox>
                 <strong>Example Prompt:</strong>
-                <p>"Create a modern landing page for a coffee shop called &apos;Brew Peak&apos;. It should have a hero section with a dark wood background, a menu grid with prices, and a contact footer. Use Tailwind CSS for styling."</p>
+                <p>&quot;Create a modern landing page for a coffee shop called &apos;Brew Peak&apos;. It should have a hero section with a dark wood background, a menu grid with prices, and a contact footer. Use Tailwind CSS for styling.&quot;</p>
             </NoteBox>
 
             <p>
-                The AI will generate the code. You can either copy-paste it into the editor or, if available, click "Apply to File".
+                The AI will generate the code. You can either copy-paste it into the editor or, if available, click &quot;Apply to File&quot;.
             </p>
         </section>
 
@@ -412,7 +412,7 @@ export default function CoursePage() {
                 <li>Go to the address bar and type <code>localhost:3000</code>.</li>
             </ul>
             <p>
-                You should see your "Brew Peak" landing page live! Any changes you make in the code (or via AI) will automatically update here when you save (<kbd>Cmd</kbd> + <kbd>S</kbd>).
+                You should see your &quot;Brew Peak&quot; landing page live! Any changes you make in the code (or via AI) will automatically update here when you save (<kbd>Cmd</kbd> + <kbd>S</kbd>).
             </p>
             
             <NoteBox>
