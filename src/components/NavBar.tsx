@@ -4,7 +4,7 @@ import Image from "next/image";
 import styled from "styled-components";
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
-import { Github, BookOpen, Download } from "lucide-react"; 
+import { Github, BookOpen, Book, Download } from "lucide-react"; 
 import { trackEvent, GA_CATEGORY } from '@/lib/analytics'; // Analytics Import
 
 const NavBarWrapper = styled.nav`
@@ -140,6 +140,15 @@ export default function NavBar() {
                 onClick={() => handleNavClick('Documentation')}
              >
                 <BookOpen size={18} />
+             </Link>
+
+             <Link
+                href="/course"
+                className="nav-item"
+                title="Course"
+                onClick={() => handleNavClick('Course')}
+             >
+                <Book size={18} />
              </Link>
              
              <a 
