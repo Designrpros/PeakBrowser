@@ -2,11 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import styled, { keyframes } from "styled-components";
-<<<<<<< HEAD
 import { ArrowUp, Globe, FileText, Terminal, Folder, PenTool, BookOpen, HardDrive, ChevronDown, Check, MessageSquare, CheckSquare, Zap, Monitor, Library, Bot, Lock } from 'lucide-react';
-=======
-import { ArrowUp, Globe, FileText, Terminal, Folder, PenTool, BookOpen, HardDrive, ChevronDown, Check, MessageSquare, CheckSquare, Zap, Layers, Box, Monitor, Library, Bot, Lock } from 'lucide-react';
->>>>>>> 0ad4fa7d52b391ce7555aa0011289117ffed3869
 import Image from 'next/image';
 import Link from 'next/link';
 import { trackEvent, GA_CATEGORY } from '@/lib/analytics';
@@ -20,22 +16,11 @@ const AVAILABLE_MODES = [
     { id: 'Docs', icon: BookOpen, placeholder: 'Search documentation...' },
 ];
 
-<<<<<<< HEAD
 // 2. App Only (available in the native app)
-=======
-// 2. Desktop Only (Everything else)
->>>>>>> 0ad4fa7d52b391ce7555aa0011289117ffed3869
 const DESKTOP_MODES = [
     { id: 'Note', icon: FileText, placeholder: 'Enter note title...' },
     { id: 'Whiteboard', icon: PenTool, placeholder: 'Enter whiteboard name...' },
     { id: 'LLM', icon: MessageSquare, placeholder: 'Ask AI...' },
-<<<<<<< HEAD
-=======
-    { id: 'Terminal', icon: Terminal, placeholder: 'Enter terminal command...' },
-    { id: 'Project', icon: Folder, placeholder: 'Open folder name...' },
-    { id: 'Mind Map', icon: PenTool, placeholder: 'Enter Mind Map name...' },
-    { id: 'Finder', icon: HardDrive, placeholder: 'Enter path...' },
->>>>>>> 0ad4fa7d52b391ce7555aa0011289117ffed3869
 ];
 
 const SEARCH_ENGINES = [
@@ -228,19 +213,11 @@ const HeroSubtitle = styled.p`
 
 const ChoiceGrid = styled.div`
     display: grid;
-<<<<<<< HEAD
     grid-template-columns: 1fr;
     gap: 2rem;
     width: 100%;
     max-width: 560px;
     margin: 0 auto;
-=======
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    width: 100%;
-    
-    @media (max-width: 768px) { grid-template-columns: 1fr; }
->>>>>>> 0ad4fa7d52b391ce7555aa0011289117ffed3869
 `;
 
 const ChoiceCard = styled.div`
@@ -469,7 +446,6 @@ export default function LandingPage({ onOpenTab }: LandingPageProps) {
             {/* MARKETING CONTENT */}
             <MarketingWrapper ref={marketingRef}>
                 <Section>
-<<<<<<< HEAD
                     <HeroTitle>Get the Real Thing.</HeroTitle>
                     <HeroSubtitle>
                         This demo only scratches the surface. The full Peak Browser experience is native, private, and on the App Store.
@@ -491,48 +467,6 @@ export default function LandingPage({ onOpenTab }: LandingPageProps) {
                                 <li><Bot /> Optional AI &amp; Peak Mesh</li>
                             </FeatureList>
                             <CardButton href="/download" $variant="blue">Download on the App Store</CardButton>
-=======
-                    <HeroTitle>Two Ways to Peak.</HeroTitle>
-                    <HeroSubtitle>
-                        One philosophy: Uninterrupted Flow. Choose the browser that fits your workflow.
-                    </HeroSubtitle>
-                    
-                    <ChoiceGrid>
-                        {/* PEAK NATIVE - UPDATED LINK */}
-                        <ChoiceCard>
-                            <CardHeader>
-                                <CardIcon $color="#4A90E2"><Zap size={24} /></CardIcon>
-                                <CardTitle>Peak Native</CardTitle>
-                            </CardHeader>
-                            <CardDescription>
-                                The original lightweight companion. Built with Swift for macOS. Perfect for fast browsing and quick notes without the bloat.
-                            </CardDescription>
-                            <FeatureList>
-                                <li><Zap /> Native macOS Performance</li>
-                                <li><Monitor /> Lightweight WebKit Engine</li>
-                                <li><Library /> Basic Notes & Bookmarks</li>
-                                <li><Bot /> Chat with LLMs</li>
-                            </FeatureList>
-                            <CardButton href="/download?app=native" $variant="blue">Download Native</CardButton>
-                        </ChoiceCard>
-
-                        {/* PEAK MULTIPLATFORM - UPDATED LINK */}
-                        <ChoiceCard>
-                            <CardHeader>
-                                <CardIcon $color="#805AD5"><Layers size={24} /></CardIcon>
-                                <CardTitle>Peak Multiplatform</CardTitle>
-                            </CardHeader>
-                            <CardDescription>
-                                The complete OS for your workflow. Built with Electron for Mac, Windows, and Linux. Includes advanced developer tools.
-                            </CardDescription>
-                            <FeatureList>
-                                <li><Box /> Cross-Platform (Win/Lin/Mac)</li>
-                                <li><Layers /> Kanban & Whiteboards</li>
-                                <li><Bot /> Project View & Terminal</li>
-                                <li><Library /> Advanced AI Context</li>
-                            </FeatureList>
-                            <CardButton href="/download?app=multi" $variant="purple">Download Multiplatform</CardButton>
->>>>>>> 0ad4fa7d52b391ce7555aa0011289117ffed3869
                         </ChoiceCard>
                     </ChoiceGrid>
                 </Section>

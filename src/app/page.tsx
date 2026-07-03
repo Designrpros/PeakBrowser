@@ -1,6 +1,5 @@
 'use client';
 
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 import styled, { keyframes, css } from 'styled-components';
 import Link from 'next/link';
@@ -1341,12 +1340,3 @@ export default function Home() {
     </Page>
   );
 }
-=======
-import TabManager from '@/components/WebApp/TabManager';
-
-export default function Home() {
-  return (
-    <TabManager />
-  );
-}
->>>>>>> 0ad4fa7d52b391ce7555aa0011289117ffed3869
