@@ -4,7 +4,11 @@ import Image from "next/image";
 import styled from "styled-components";
 import Link from "next/link";
 import { usePathname } from 'next/navigation';
+<<<<<<< HEAD
 import { BookOpen, Download, AppWindow } from "lucide-react";
+=======
+import { Github, BookOpen, Book, Download } from "lucide-react"; 
+>>>>>>> 0ad4fa7d52b391ce7555aa0011289117ffed3869
 import { trackEvent, GA_CATEGORY } from '@/lib/analytics'; // Analytics Import
 
 const NavBarWrapper = styled.nav`
@@ -143,6 +147,7 @@ export default function NavBar() {
              </Link>
 
              <Link
+<<<<<<< HEAD
                 href="/demo"
                 className="nav-item"
                 title="Web Demo"
@@ -151,6 +156,27 @@ export default function NavBar() {
                 <AppWindow size={18} />
              </Link>
 
+=======
+                href="/course"
+                className="nav-item"
+                title="Course"
+                onClick={() => handleNavClick('Course')}
+             >
+                <Book size={18} />
+             </Link>
+             
+             <a 
+                href="https://github.com/Designrpros/peak-multiplatform" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="nav-item" 
+                title="GitHub"
+                onClick={() => handleNavClick('GitHub Repo')}
+             >
+                <Github size={18} />
+             </a>
+             
+>>>>>>> 0ad4fa7d52b391ce7555aa0011289117ffed3869
              <Separator />
           </>
 

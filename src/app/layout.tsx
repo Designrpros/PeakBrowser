@@ -11,6 +11,7 @@ import GoogleAnalytics from "@/components/GoogleAnalytics"; // <-- Import
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+<<<<<<< HEAD
   metadataBase: new URL("https://peakbrowser.vercel.app"),
   title: "Peak Browser — Press a shortcut. Peak appears.",
   description:
@@ -21,6 +22,10 @@ export const metadata: Metadata = {
       "A native Apple browser workspace for people who don't just browse. Search, save, plan, draw, ask AI, and collaborate nearby from one calm command surface.",
     images: ["/peak-logo.png"],
   },
+=======
+  title: "Peak Browser",
+  description: "An intelligent menubar browser for macOS.",
+>>>>>>> 0ad4fa7d52b391ce7555aa0011289117ffed3869
 };
 
 export default function RootLayout({

@@ -33,8 +33,13 @@
 
 html,
 body {
+<<<<<<< HEAD
   /* clip (not hidden) — hidden turns body into a second scroll container */
   overflow-x: clip;
+=======
+  max-width: 100vw;
+  overflow-x: hidden;
+>>>>>>> 0ad4fa7d52b391ce7555aa0011289117ffed3869
 }
 
 body {
