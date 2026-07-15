@@ -66,7 +66,7 @@ export default function PrivacyPolicyPage() {
     <PolicyContainer>
       <ContentWrapper>
         <h1>Privacy Policy</h1>
-        <p><strong>Last Updated: July 3, 2026</strong></p>
+        <p><strong>Last Updated: July 15, 2026</strong></p>
 
         <p>
           Peak Browser (&ldquo;Peak,&rdquo; &ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) is designed as a local-first browser workspace for Apple platforms. This Privacy Policy explains how information is handled when you use Peak.
@@ -78,6 +78,9 @@ export default function PrivacyPolicyPage() {
         </p>
         <p>
           Most Peak data is stored locally on your device. If iCloud sync is enabled, that data may sync through your private Apple iCloud account using CloudKit.
+        </p>
+        <p>
+          Some optional features do reach outside your device: cloud AI models, the websites you browse, and Peak Surf&apos;s weather, map, and country data. Each is described below, and none of them is required to use Peak.
         </p>
 
         <h2>Information Stored On Your Device</h2>
@@ -129,6 +132,57 @@ export default function PrivacyPolicyPage() {
         </p>
         <p>
           Peak does not control the privacy practices of websites you visit.
+        </p>
+
+        <h2>Peak Surf: Waves, Weather, Maps, And Country Data</h2>
+        <p>
+          Peak Surf is optional, and it is the only part of Peak that contacts third-party data services. Everything in this section applies only when you use it.
+        </p>
+
+        <p>
+          <strong>Waves are simulated on your device.</strong> By default, Peak generates swell height, period, and direction locally using its own model. These figures are a plausible simulation, not a forecast. They are labelled &ldquo;Simulated&rdquo; wherever they appear, nothing about them is sent anywhere, and they must never be used to judge whether it is safe to enter the water.
+        </p>
+
+        <p>
+          <strong>Weather comes from Apple Weather.</strong> To show wind, cloud, precipitation, and sunrise and sunset times for a surf spot, the coordinates of that spot are sent to Apple&apos;s WeatherKit service. WeatherKit provides no ocean swell, which is why wave data comes from a separate source. Apple handles this data under Apple&apos;s own privacy policy. See{' '}
+          <a href="https://weatherkit.apple.com/legal-attribution.html">Apple Weather data sources</a>.
+        </p>
+
+        <p>
+          <strong>Open-Meteo is opt-in and needs your own API key.</strong> Peak does not contact Open-Meteo unless you add your own Open-Meteo API key under Settings &rarr; Surf &rarr; Surf Data. Their free endpoint is licensed for non-commercial use only and Peak does not use it. If you add a key, the coordinates of spots you view are sent to Open-Meteo to fetch weather, marine conditions, and sunrise and sunset times, and Peak shows the attribution &ldquo;Weather data by Open-Meteo.com&rdquo; that their CC BY 4.0 licence requires. Open-Meteo states that their server logs may retain information such as IP addresses, requested URLs, and the coordinates within them for up to 90 days. Your key is stored on your device. See the{' '}
+          <a href="https://open-meteo.com/en/license">Open-Meteo licence</a> and their{' '}
+          <a href="https://open-meteo.com/en/terms">terms and privacy policy</a>.
+        </p>
+
+        <p>
+          <strong>Country summaries come from Wikipedia.</strong> When you open a country in the surf travel passport, its name is sent to Wikipedia&apos;s API to fetch a summary. That text is contributed by Wikipedia&apos;s volunteer editors and reused under{' '}
+          <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>; Peak links to the specific article it quotes. Requests are handled by the Wikimedia Foundation under the{' '}
+          <a href="https://foundation.wikimedia.org/wiki/Policy:Privacy_policy/en">Wikimedia privacy policy</a>.
+        </p>
+
+        <p>
+          <strong>Country indicators come from World Bank Open Data.</strong> Population, GDP per person, fertility, and life expectancy figures are fetched by sending a country code to the World Bank API. This data is licensed CC BY 4.0. See the{' '}
+          <a href="https://data.worldbank.org/summary-terms-of-use">World Bank terms of use</a>.
+        </p>
+
+        <p>
+          <strong>Maps come from Apple.</strong> Maps, satellite imagery, and geographic presentation are provided by Apple Maps through MapKit, which displays its own attribution on the map itself. See{' '}
+          <a href="https://developer.apple.com/documentation/mapkit">MapKit</a>.
+        </p>
+
+        <p>
+          Forecast and country information may be cached on your device so Peak does not repeatedly re-request it. Peak does not sell any of this information, and does not use it for advertising or tracking.
+        </p>
+
+        <h2>Location</h2>
+        <p>
+          Peak requests your location only when you use a feature that needs it: finding the coast nearest you when you set up a home break in Peak Surf, showing where you are on the surf travel map, and estimating flight distances. You can decline or revoke this permission at any time in your system settings, and those features fall back to a home coast you choose yourself.
+        </p>
+        <p>
+          <strong>Before any location leaves your device, Peak rounds it to roughly one kilometre.</strong> The unrounded position is used only on your device, to draw your own position on the map. The rounded coordinate is what gets sent to Apple Weather to fetch conditions, to Apple&apos;s geocoder to resolve a country name, and, only if you have configured your own key, to Open-Meteo.
+        </p>
+        <p>
+          Peak does not store your location on our servers, does not link it to an identity or an account, and does not use it for advertising or tracking.
         </p>
 
         <h2>Local Mesh Collaboration</h2>
